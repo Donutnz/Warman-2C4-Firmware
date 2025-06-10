@@ -1,4 +1,9 @@
 #include <Arduino.h>
+#include <SpeedyStepper.h>
+#include <Servo.h>
+
+#include "pins.h"
+#include "settings.h"
 
 // put function declarations here:
 int myFunction(int, int);
