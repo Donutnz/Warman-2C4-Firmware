@@ -115,31 +115,13 @@ void setup() {
 	// Make sure the go switch isn't turned on at start up. Prevents surprises.
 	while(digitalRead(RUN_SWITCH)){
 		digitalWrite(LED_BUILTIN, HIGH); 
-		delay(5000);
+		delay(2000);
 		digitalWrite(LED_BUILTIN, LOW);
-		delay(5000);
+		delay(2000);
 	}
 
-	/* WIP - startup procedure.
-	// Prime
-	while(!digitalRead(RUN_SWITCH)){
-		digitalWrite(LED_BUILTIN, HIGH); 
-		delay(1000);
-		digitalWrite(LED_BUILTIN, LOW);
-		delay(5000);
-	}
-
-	moveArms(ARM_CLOSED);
+	moveArms(ARMS_CLOSED);
 	tiltRamp(RAMP_ANGLE_NEUTRAL);
-
-	// GO!
-	while(digitalRead(RUN_SWITCH)){
-		digitalWrite(LED_BUILTIN, HIGH); 
-		delay(1000);
-		digitalWrite(LED_BUILTIN, LOW);
-		delay(1000);
-	}
-	*/
 }
 
 void loop() {
@@ -170,11 +152,11 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:
-			moveArms(ARM_OPEN);
+			moveArms(ARMS_OPEN);
 			moveFwd(450);
 			break;
 		case 1:
-			moveArms(ARM_CLOSED);
+			moveArms(ARMS_CLOSED);
 			break;
 		default:
 			break;

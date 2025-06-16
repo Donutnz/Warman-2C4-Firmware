@@ -27,6 +27,6 @@
 #define RX_IN_3 A3
 
 // Other
-#define RUN_SWITCH 12
+#define RUN_SWITCH 12 //Active LOW
 
 //Status LED -> LED_BUILTIN
