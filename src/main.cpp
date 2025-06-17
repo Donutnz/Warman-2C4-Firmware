@@ -157,6 +157,29 @@ void loop() {
 			break;
 		case 1:
 			moveArms(ARMS_CLOSED);
+			delay(2000); //Let balls settle.
+			break;
+		case 2:
+			turnPivot(-90, false); //Turn to be perpendicular to edge of ramp. Easier to climb the 16mm curb?
+			break;
+		case 3:
+			moveFwd(-100); //Climb onto seesaw.
+			break;
+		case 4:
+			turnPivot(45, true);
+			break;
+		case 5:
+			moveFwd(-700); //Drive to just over pivot
+			delay(3000); //Wait 3 seconds for seesaw to flip and stabilise.
+			break;
+		case 6:
+			moveFwd(-300); //Move to be inline with Deposit Zone edge.
+			break;
+		case 7:
+			turnNeutral(45); //Rotate to be perpendicular to deposit zone. Note: still on seesaw.
+			break;
+		case 8:
+			moveFwd(100); //Drive up to edge of deposit zone.
 			break;
 		default:
 			break;
