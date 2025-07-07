@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SpeedyStepper.h>
 #include <Servo.h>
+#include <ServoEasing.hpp>
 
 #include "pins.h"
 #include "settings.h"
