@@ -2,6 +2,13 @@
 
 // Settings about the bot
 
+//Activate debug mode
+#define DEBUG_MODE 0
+
+// Pivot turn helper
+#define RIGHT_WHEEL 1
+#define LEFT_WHEEL 0
+
 // Wheel OD for calculating move dist from rotation (mm)
 #define WHEEL_OD 100
 
@@ -24,6 +31,7 @@ Pre-determined Servo Positions (degrees, 0-180)
 
 // Ramp neutral angle (aka flat)
 #define RAMP_ANGLE_NEUTRAL 90
+#define RAMP_ANGLE_DUMP 180
 
 // Arms open
 #define ARMS_OPEN 100

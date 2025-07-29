@@ -16,47 +16,47 @@ Might end up doing a "moves are objects, iterate thru list of them" approach if 
 /*
 Simple fwd or back move.
 
-float distance = distance to travel in mm.
+@param distance distance to travel in mm.
 */
-void moveFwd(float distance);
+void moveLinear(float distance);
 
 /*
 Rotate around centre.
 
 Both wheels driven, one fwd and one back.
 
-int targetAngle = angle in degrees. Positive for CW, negative for CCW.
+@param targetAngle Angle in degrees. Positive for CW, negative for CCW.
 */
 void turnNeutral(float targetAngle);
 
-/*
+/**
 Pivot on one wheel.
 
 One wheel braked, the other driven.
 
-int finalAngle = The angle to rotate to
-bool turnRight = If True, pivot around rh wheel. I.e. right wheel is braked, left wheel is driven.
+@param finalAngle The angle to rotate to
+@param turnRight Stationary wheel. Use RIGHT_WHEEL and LEFT_WHEEL I.e. right wheel is braked, left wheel is driven.
 */
-void turnPivot(float targetAngle, bool aroundRight);
+void turnPivot(float targetAngle, int aroundRight);
 
 /*
 Move arms to angle.
 
-float armsAngle = Set angle of grabber arms. 0-180 degrees.
+@param armsAngle Set angle of grabber arms. 0-180 degrees.
 */
 void moveArms(float armsAngle);
 
 /*
 Set ramp angle.
 
-float rampAngle = Set ramp angle. 0-180 degrees. 
+@param rampAngle Set ramp angle. 0-180 degrees. 
 */
 void tiltRamp(float rampAngle);
 
 /*
-Might do more indepth error handling. E.g. flash codes or attempt to connect to serial or something.
+Wait for button to be pressed. Also handles ignoring button held.
 */
-void handleError();
+void awaitButton();
 
 // Declare Steppers
 SpeedyStepper wheelR;
@@ -79,12 +79,11 @@ Servo rampR;
 // Keeps track of current task.
 int taskCounter;
 
-// Set if something happens.
-int errorFlag;
-
 void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(RUN_SWITCH, INPUT);
+
+	digitalWrite(LED_BUILTIN, LOW); //Start low
 
 	// Init Servos
 	armL.attach(SERVO_L_ARM);
@@ -113,74 +112,82 @@ void setup() {
 	// Init task counter
 	taskCounter = 0;
 
-	// Make sure the go switch isn't turned on at start up. Prevents surprises.
-	while(digitalRead(RUN_SWITCH)){
-		digitalWrite(LED_BUILTIN, HIGH); 
-		delay(2000);
-		digitalWrite(LED_BUILTIN, LOW);
-		delay(2000);
-	}
-
+	//Get into start position
 	moveArms(ARMS_CLOSED);
 	tiltRamp(RAMP_ANGLE_NEUTRAL);
+
+	//Wait for GO!
+	awaitButton();
+
+	digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
-	// Skip everything if run switch is off.
-	if(digitalRead(RUN_SWITCH)){
-		return;
-	}
-
-	// If error flag is set, crash out.
-	if(errorFlag < 0){
-		while(1){
-			digitalWrite(LED_BUILTIN, HIGH);
-			delay(3000);
-			digitalWrite(LED_BUILTIN, LOW);
-			delay(1000);
-		}
-
-		return;
-	}
-
 	/*
 	Go through list of tasks to run. Position in list is handled by the task counter.
 
 	Core of everything.
 	*/
+
+	//Step thru tasks
+	if(DEBUG_MODE){
+		awaitButton();
+	}
+
 	if(wheelL.motionComplete() && wheelR.motionComplete()){
 		taskCounter += 1; // Increment task
 
 		switch (taskCounter){
-		case 0:
+		case 0: //Open arms and drive to ball collection
 			moveArms(ARMS_OPEN);
-			moveFwd(450);
+			moveLinear(450);
 			break;
-		case 1:
+		case 1: //Close arms to capture balls
 			moveArms(ARMS_CLOSED);
 			delay(2000); //Let balls settle.
 			break;
-		case 2:
-			turnPivot(-90, false); //Turn to be perpendicular to edge of ramp. Easier to climb the 16mm curb?
+		case 2: //Turn so rear faces ramp edge.
+			turnPivot(-90, LEFT_WHEEL); //Turn to be perpendicular to edge of ramp. Easier to climb the 16mm curb?
 			break;
 		case 3:
-			moveFwd(-100); //Climb onto seesaw.
+			moveLinear(-100); //Climb onto seesaw.
 			break;
-		case 4:
-			turnPivot(45, true);
+		case 4: //Drive over pivot and pause for seesaw to drop
+			moveLinear(-700);
+			delay(3000);
 			break;
-		case 5:
-			moveFwd(-700); //Drive to just over pivot
-			delay(3000); //Wait 3 seconds for seesaw to flip and stabilise.
+		case 5: //Slightly tweak position to avoid hitting dump zone edge on ramp dismount 
+			turnNeutral(45);
 			break;
 		case 6:
-			moveFwd(-300); //Move to be inline with Deposit Zone edge.
+			moveLinear(-200);
 			break;
-		case 7:
-			turnNeutral(45); //Rotate to be perpendicular to deposit zone. Note: still on seesaw.
+		case 7: //Rotate to be perpendicular to seesaw edge.
+			turnNeutral(-45); 
+		case 8: //Dismount seesaw
+			moveLinear(-100);
 			break;
-		case 8:
-			moveFwd(100); //Drive up to edge of deposit zone.
+		case 9: //Align to dump edge
+			turnNeutral(-90);
+			break;
+		case 10: //Drive up to drop zone edge
+			moveLinear(-300);
+			break;
+		case 11: //Dump balls
+			tiltRamp(RAMP_ANGLE_DUMP);
+			delay(3000);
+			break;
+		case 12: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop
+			tiltRamp(RAMP_ANGLE_NEUTRAL);
+			moveLinear(400);
+			break;
+		case 13: //End. Celebratory LED flashes
+			while(1){
+				digitalWrite(LED_BUILTIN, HIGH);
+				delay(500);
+				digitalWrite(LED_BUILTIN, LOW);
+				delay(500);
+			}
 			break;
 		default:
 			break;
@@ -191,7 +198,7 @@ void loop() {
 	wheelR.processMovement();
 }
 
-void moveFwd(float distance){
+void moveLinear(float distance){
 	wheelL.setupRelativeMoveInMillimeters(distance);
 	wheelR.setupRelativeMoveInMillimeters(distance);
 }
@@ -201,7 +208,7 @@ void turnNeutral(float targetAngle){
 	wheelR.setupRelativeMoveInMillimeters((targetAngle*-1)*neutralMMperDeg);
 }
 
-void turnPivot(float targetAngle, bool aroundRight){
+void turnPivot(float targetAngle, int aroundRight){
 	if(aroundRight){
 		wheelL.setupRelativeMoveInMillimeters(targetAngle*pivotMMperDeg);
 	}
@@ -211,12 +218,6 @@ void turnPivot(float targetAngle, bool aroundRight){
 }
 
 void moveArms(float armsAngle){
-	// Prevent error
-	if((armsAngle > 180) || (armsAngle < 0)){
-		errorFlag = VALUE_ERROR; // Set error occured flag. 
-		return;
-	}
-
 	armL.write(armsAngle);
 	armR.write(armsAngle*-1); // Mirror angle
 
@@ -224,13 +225,33 @@ void moveArms(float armsAngle){
 }
 
 void tiltRamp(float rampAngle){
-	// Prevent Error
-	if((rampAngle > 180) || (rampAngle < 0)){
-		errorFlag = VALUE_ERROR; // Set error occured flag. 
-		return;
-	}
-
 	rampL.write(rampAngle);
 	rampR.write(rampAngle*-1); // Mirror for the other side.
 	return;
+}
+
+void awaitButton(){
+	while(!digitalRead(RUN_SWITCH)){} //Wait for already pressed button to be released. Prevents fast fwd.
+
+	unsigned long previousMillis = 0;
+	int ledState = LOW;
+
+	while(digitalRead(RUN_SWITCH)){ //Wait for button to be pressed again. And flash LED to show impatience.
+		unsigned long currentMillis = millis();
+
+		if(currentMillis - previousMillis >= 500){
+			previousMillis = currentMillis;
+
+			if(ledState == LOW){
+				ledState = HIGH;
+			}
+			else{
+				ledState = LOW;
+			}
+
+			digitalWrite(LED_BUILTIN, ledState);
+		}
+	}
+	
+	digitalWrite(LED_BUILTIN, LOW);
 }
