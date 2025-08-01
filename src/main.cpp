@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <SpeedyStepper.h>
-#include <Servo.h>
 #include <ServoEasing.hpp>
 
 #include "pins.h"
@@ -55,6 +54,8 @@ void tiltRamp(float rampAngle);
 
 /*
 Wait for button to be pressed. Also handles ignoring button held.
+
+Blocking
 */
 void awaitButton();
 
@@ -69,12 +70,12 @@ float neutralMMperDeg;
 float pivotMMperDeg;
 
 // Arm Servos
-Servo armL;
-Servo armR;
+ServoEasing armL;
+ServoEasing armR;
 
 // Ramp Servos
-Servo rampL;
-Servo rampR;
+ServoEasing rampL;
+ServoEasing rampR;
 
 // Keeps track of current task.
 int taskCounter;
@@ -85,12 +86,25 @@ void setup() {
 
 	digitalWrite(LED_BUILTIN, LOW); //Start low
 
+
 	// Init Servos
 	armL.attach(SERVO_L_ARM);
 	armR.attach(SERVO_R_ARM);
 
+	armL.setSpeed(ARM_SPEED);
+	armR.setSpeed(ARM_SPEED);
+
 	rampL.attach(SERVO_RAMP_L);
 	rampR.attach(SERVO_RAMP_R);
+
+	rampL.setSpeed(RAMP_SPEED);
+	rampR.setSpeed(RAMP_SPEED);
+
+	armL.setReverseOperation(true); //!!! CHECK THESE BEFORE RUNNING !!!
+	rampL.setReverseOperation(true);
+
+	setEasingTypeForAllServos(EASE_SINE_IN_OUT);	
+
 
 	// Init Steppers
 	pinMode(STEPPER_R_EN, OUTPUT); //May not need this. Leave floating? Disconnect?
@@ -107,7 +121,7 @@ void setup() {
 	wheelL.setSpeedInRevolutionsPerSecond(SPEED_LIMIT);
 
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
-	pivotMMperDeg = (2 * PI * TRACK_WIDTH) / 360;
+	pivotMMperDeg = neutralMMperDeg * 2;
 
 	// Init task counter
 	taskCounter = 0;
@@ -115,6 +129,13 @@ void setup() {
 	//Get into start position
 	moveArms(ARMS_CLOSED);
 	tiltRamp(RAMP_ANGLE_NEUTRAL);
+
+	// Wait for servos to get to their start positions
+	synchronizeAllServosStartAndWaitForAllServosToStop();
+
+	// Set servo operation to be non-blocking
+	synchronizeAllServosAndStartInterrupt(false);
+	//disableServoEasingInterrupt(); // Might need this not sure.
 
 	//Wait for GO!
 	awaitButton();
@@ -129,13 +150,12 @@ void loop() {
 	Core of everything.
 	*/
 
-	//Step thru tasks
-	if(DEBUG_MODE){
+	if(wheelL.motionComplete() && wheelR.motionComplete() && !isOneServoMoving()){ //Make sure current task is complete before going to next one
+		
+#if defined(DEBUG_BOT)
+		//Step thru tasks
 		awaitButton();
-	}
-
-	if(wheelL.motionComplete() && wheelR.motionComplete()){
-		taskCounter += 1; // Increment task
+#endif
 
 		switch (taskCounter){
 		case 0: //Open arms and drive to ball collection
@@ -177,7 +197,7 @@ void loop() {
 			tiltRamp(RAMP_ANGLE_DUMP);
 			delay(3000);
 			break;
-		case 12: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop
+		case 12: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
 			tiltRamp(RAMP_ANGLE_NEUTRAL);
 			moveLinear(400);
 			break;
@@ -192,8 +212,12 @@ void loop() {
 		default:
 			break;
 		}
+
+		taskCounter += 1; // Increment task
 	}
 
+	// Execute next update functions.
+	updateAllServos();
 	wheelL.processMovement();
 	wheelR.processMovement();
 }
@@ -218,15 +242,16 @@ void turnPivot(float targetAngle, int aroundRight){
 }
 
 void moveArms(float armsAngle){
-	armL.write(armsAngle);
-	armR.write(armsAngle*-1); // Mirror angle
+	armR.setEaseTo(armsAngle);
+	armL.setEaseTo(armsAngle);
 
 	return;
 }
 
 void tiltRamp(float rampAngle){
-	rampL.write(rampAngle);
-	rampR.write(rampAngle*-1); // Mirror for the other side.
+	rampL.setEaseTo(rampAngle);
+	rampR.setEaseTo(rampAngle);
+
 	return;
 }
 

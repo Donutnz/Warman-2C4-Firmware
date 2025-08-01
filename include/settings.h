@@ -2,8 +2,8 @@
 
 // Settings about the bot
 
-//Activate debug mode
-#define DEBUG_MODE 0
+//Enable to activate debug mode
+//#define DEBUG_BOT
 
 // Pivot turn helper
 #define RIGHT_WHEEL 1
@@ -24,6 +24,11 @@
 // 23hs5628 Max RPM
 #define SPEED_LIMIT 1500
 
+// Rate to move arms (degs per second)
+#define ARM_SPEED 50
+
+// Rate to move ramp (degs per second)
+#define RAMP_SPEED 25
 
 /*
 Pre-determined Servo Positions (degrees, 0-180)
@@ -34,15 +39,7 @@ Pre-determined Servo Positions (degrees, 0-180)
 #define RAMP_ANGLE_DUMP 180
 
 // Arms open
-#define ARMS_OPEN 100
+#define ARMS_OPEN 80
 
 // Arms closed
 #define ARMS_CLOSED 0
-
-
-/*
-Error Flags
-*/
-
-// Value Error
-#define VALUE_ERROR -1
