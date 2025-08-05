@@ -5,6 +5,9 @@
 //Enable to activate debug mode
 //#define DEBUG_BOT
 
+//Enable Serial Comms
+//#define SERIAL_BOT
+
 // Pivot turn helper
 #define RIGHT_WHEEL 1
 #define LEFT_WHEEL 0
@@ -21,14 +24,20 @@
 // 23hs5628 step angle (degrees)
 #define STEP_ANGLE 1.8
 
-// 23hs5628 Max RPM
-#define SPEED_LIMIT 1500
+// 23hs5628 Speed (mm/s)
+#define MOTOR_SPEED 20.0f
+
+// 23hs5628 Acceleration (mm/s/s)
+#define MOTOR_ACCEL 20.0f
+
+// Microstep multiplier. E.g. 1, 2, 4, 8, etc.
+#define MICROSTEPS 2
 
 // Rate to move arms (degs per second)
-#define ARM_SPEED 50
+#define ARM_SPEED 25
 
 // Rate to move ramp (degs per second)
-#define RAMP_SPEED 25
+#define RAMP_SPEED 12
 
 /*
 Pre-determined Servo Positions (degrees, 0-180)
@@ -36,10 +45,10 @@ Pre-determined Servo Positions (degrees, 0-180)
 
 // Ramp neutral angle (aka flat)
 #define RAMP_ANGLE_NEUTRAL 90
-#define RAMP_ANGLE_DUMP 180
+#define RAMP_ANGLE_DUMP 120
 
 // Arms open
-#define ARMS_OPEN 80
+#define ARMS_OPEN 0
 
 // Arms closed
-#define ARMS_CLOSED 0
+#define ARMS_CLOSED 80

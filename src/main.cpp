@@ -82,9 +82,20 @@ int taskCounter;
 
 void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(RUN_SWITCH, INPUT);
+	pinMode(RUN_SWITCH, INPUT_PULLUP);
 
 	digitalWrite(LED_BUILTIN, LOW); //Start low
+
+#ifdef SERIAL_BOT
+	//Serial stuff
+	Serial.begin(9600);
+
+	while(!Serial){}
+
+	Serial.println("Starting...");
+
+	Serial.println("Init Servos...");
+#endif
 
 
 	// Init Servos
@@ -106,25 +117,54 @@ void setup() {
 	setEasingTypeForAllServos(EASE_SINE_IN_OUT);	
 
 
+#ifdef SERIAL_BOT
+	Serial.println("Init steppers...");
+#endif
+
 	// Init Steppers
 	pinMode(STEPPER_R_EN, OUTPUT); //May not need this. Leave floating? Disconnect?
 	pinMode(STEPPER_L_EN, OUTPUT);
+	digitalWrite(STEPPER_R_EN, LOW);
+	digitalWrite(STEPPER_L_EN, LOW);
+
+	pinMode(STEPPER_R_PULSE, OUTPUT);
+	pinMode(STEPPER_R_DIR, OUTPUT);
+
+	pinMode(STEPPER_L_PULSE, OUTPUT);
+	pinMode(STEPPER_L_DIR, OUTPUT);
+
+/*
+	digitalWrite(STEPPER_L_DIR, HIGH);
+
+	while(true){
+		digitalWrite(STEPPER_L_PULSE, HIGH);
+		delayMicroseconds(500);
+		digitalWrite(STEPPER_L_PULSE, LOW);
+		delayMicroseconds(500);
+	}
+*/
 
 	wheelR.connectToPins(STEPPER_R_PULSE, STEPPER_R_DIR);
 	wheelL.connectToPins(STEPPER_L_PULSE, STEPPER_L_DIR);
 
-	float stepsPerMM = (360 / STEP_ANGLE) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
-	wheelR.setStepsPerMillimeter(stepsPerMM);
-	wheelL.setStepsPerMillimeter(stepsPerMM);
+	int stepsPerMM = (360 / STEP_ANGLE) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
+	wheelR.setStepsPerMillimeter(stepsPerMM * MICROSTEPS);
+	wheelL.setStepsPerMillimeter(stepsPerMM * MICROSTEPS);
 
-	wheelR.setSpeedInRevolutionsPerSecond(SPEED_LIMIT); //Tweak this in testing.
-	wheelL.setSpeedInRevolutionsPerSecond(SPEED_LIMIT);
+	wheelR.setSpeedInMillimetersPerSecond(MOTOR_SPEED); //Tweak this in testing.
+	wheelL.setSpeedInMillimetersPerSecond(MOTOR_SPEED); 
+	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL);
+	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL);
 
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
 
 	// Init task counter
 	taskCounter = 0;
+
+#ifdef SERIAL_BOT
+	Serial.println("Sorting out servos...");
+#endif
 
 	//Get into start position
 	moveArms(ARMS_CLOSED);
@@ -136,6 +176,10 @@ void setup() {
 	// Set servo operation to be non-blocking
 	synchronizeAllServosAndStartInterrupt(false);
 	//disableServoEasingInterrupt(); // Might need this not sure.
+
+#ifdef SERIAL_BOT
+	Serial.println("Ready to go...");
+#endif
 
 	//Wait for GO!
 	awaitButton();
@@ -155,6 +199,11 @@ void loop() {
 #if defined(DEBUG_BOT)
 		//Step thru tasks
 		awaitButton();
+#endif
+
+#ifdef SERIAL_BOT
+		Serial.print("Task Num: ");
+		Serial.prinln(taskCounter);
 #endif
 
 		switch (taskCounter){
@@ -256,6 +305,10 @@ void tiltRamp(float rampAngle){
 }
 
 void awaitButton(){
+#ifdef SERIAL_BOT
+	Serial.println("Button start...");
+#endif
+
 	while(!digitalRead(RUN_SWITCH)){} //Wait for already pressed button to be released. Prevents fast fwd.
 
 	unsigned long previousMillis = 0;
@@ -279,4 +332,8 @@ void awaitButton(){
 	}
 	
 	digitalWrite(LED_BUILTIN, LOW);
+
+#ifdef SERIAL_BOT
+	Serial.println("Button done");
+#endif
 }
