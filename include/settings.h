@@ -25,13 +25,13 @@
 #define STEP_ANGLE 1.8
 
 // 23hs5628 Speed (mm/s)
-#define MOTOR_SPEED 20.0f
+#define MOTOR_SPEED 500.0f
 
 // 23hs5628 Acceleration (mm/s/s)
-#define MOTOR_ACCEL 20.0f
+#define MOTOR_ACCEL 100.0f
 
 // Microstep multiplier. E.g. 1, 2, 4, 8, etc.
-#define MICROSTEPS 2
+#define MICROSTEPS 8
 
 // Rate to move arms (degs per second)
 #define ARM_SPEED 25

@@ -97,7 +97,6 @@ void setup() {
 	Serial.println("Init Servos...");
 #endif
 
-
 	// Init Servos
 	armL.attach(SERVO_L_ARM);
 	armR.attach(SERVO_R_ARM);
@@ -114,7 +113,7 @@ void setup() {
 	armL.setReverseOperation(true); //!!! CHECK THESE BEFORE RUNNING !!!
 	rampL.setReverseOperation(true);
 
-	setEasingTypeForAllServos(EASE_SINE_IN_OUT);	
+	setEasingTypeForAllServos(EASE_SINE_IN_OUT); //Change to quadratic?
 
 
 #ifdef SERIAL_BOT
@@ -133,9 +132,9 @@ void setup() {
 	pinMode(STEPPER_L_PULSE, OUTPUT);
 	pinMode(STEPPER_L_DIR, OUTPUT);
 
-/*
 	digitalWrite(STEPPER_L_DIR, HIGH);
 
+/*
 	while(true){
 		digitalWrite(STEPPER_L_PULSE, HIGH);
 		delayMicroseconds(500);
@@ -147,14 +146,22 @@ void setup() {
 	wheelR.connectToPins(STEPPER_R_PULSE, STEPPER_R_DIR);
 	wheelL.connectToPins(STEPPER_L_PULSE, STEPPER_L_DIR);
 
-	int stepsPerMM = (360 / STEP_ANGLE) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
-	wheelR.setStepsPerMillimeter(stepsPerMM * MICROSTEPS);
-	wheelL.setStepsPerMillimeter(stepsPerMM * MICROSTEPS);
+	float stepsPerMM = (360 / STEP_ANGLE) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
+	wheelR.setStepsPerMillimeter(stepsPerMM*MICROSTEPS);
+	wheelL.setStepsPerMillimeter(stepsPerMM*MICROSTEPS);
 
-	wheelR.setSpeedInMillimetersPerSecond(MOTOR_SPEED); //Tweak this in testing.
-	wheelL.setSpeedInMillimetersPerSecond(MOTOR_SPEED); 
-	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL);
-	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL);
+	wheelR.setSpeedInMillimetersPerSecond(MOTOR_SPEED*MICROSTEPS); //Tweak this in testing.
+	wheelL.setSpeedInMillimetersPerSecond(MOTOR_SPEED*MICROSTEPS); 
+	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
+	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
+
+	//wheelR.setSpeedInStepsPerSecond(400);
+	//wheelL.setSpeedInStepsPerSecond(400);
+	//wheelR.setAccelerationInStepsPerSecondPerSecond(200);
+	//wheelL.setAccelerationInStepsPerSecondPerSecond(200);
+
+	//wheelR.moveRelativeInMillimeters(500);
+	//wheelL.moveRelativeInMillimeters(500);
 
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
@@ -175,7 +182,7 @@ void setup() {
 
 	// Set servo operation to be non-blocking
 	synchronizeAllServosAndStartInterrupt(false);
-	//disableServoEasingInterrupt(); // Might need this not sure.
+	disableServoEasingInterrupt(); // Might need this not sure.
 
 #ifdef SERIAL_BOT
 	Serial.println("Ready to go...");
@@ -248,6 +255,8 @@ void loop() {
 			break;
 		case 12: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
 			tiltRamp(RAMP_ANGLE_NEUTRAL);
+			wheelR.setAccelerationInMillimetersPerSecondPerSecond(10000); //Hard brake
+			wheelL.setAccelerationInMillimetersPerSecondPerSecond(10000);
 			moveLinear(400);
 			break;
 		case 13: //End. Celebratory LED flashes
@@ -272,18 +281,18 @@ void loop() {
 }
 
 void moveLinear(float distance){
-	wheelL.setupRelativeMoveInMillimeters(distance);
+	wheelL.setupRelativeMoveInMillimeters(distance*-1);
 	wheelR.setupRelativeMoveInMillimeters(distance);
 }
 
 void turnNeutral(float targetAngle){
-	wheelL.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
-	wheelR.setupRelativeMoveInMillimeters((targetAngle*-1)*neutralMMperDeg);
+	wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*neutralMMperDeg);
+	wheelR.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 }
 
 void turnPivot(float targetAngle, int aroundRight){
 	if(aroundRight){
-		wheelL.setupRelativeMoveInMillimeters(targetAngle*pivotMMperDeg);
+		wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*pivotMMperDeg);
 	}
 	else{
 		wheelR.setupRelativeMoveInMillimeters(targetAngle*pivotMMperDeg);
