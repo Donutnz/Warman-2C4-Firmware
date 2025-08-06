@@ -98,14 +98,14 @@ void setup() {
 #endif
 
 	// Init Servos
-	armL.attach(SERVO_L_ARM);
-	armR.attach(SERVO_R_ARM);
+	armL.attach(SERVO_L_ARM, ARMS_CLOSED);
+	armR.attach(SERVO_R_ARM, ARMS_CLOSED);
 
 	armL.setSpeed(ARM_SPEED);
 	armR.setSpeed(ARM_SPEED);
 
-	rampL.attach(SERVO_RAMP_L);
-	rampR.attach(SERVO_RAMP_R);
+	rampL.attach(SERVO_RAMP_L, RAMP_ANGLE_NEUTRAL);
+	rampR.attach(SERVO_RAMP_R, RAMP_ANGLE_NEUTRAL);
 
 	rampL.setSpeed(RAMP_SPEED);
 	rampR.setSpeed(RAMP_SPEED);
@@ -113,7 +113,7 @@ void setup() {
 	armL.setReverseOperation(true); //!!! CHECK THESE BEFORE RUNNING !!!
 	rampL.setReverseOperation(true);
 
-	setEasingTypeForAllServos(EASE_SINE_IN_OUT); //Change to quadratic?
+	setEasingTypeForAllServos(EASE_QUADRATIC_IN_OUT); //Is this best curve?
 
 
 #ifdef SERIAL_BOT

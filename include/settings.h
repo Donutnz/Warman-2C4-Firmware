@@ -13,13 +13,13 @@
 #define LEFT_WHEEL 0
 
 // Wheel OD for calculating move dist from rotation (mm)
-#define WHEEL_OD 100
+#define WHEEL_OD 102
 
 // Lateral distance between wheel centres. (mm)
-#define TRACK_WIDTH 345
+#define TRACK_WIDTH 335
 
 // Distance from turning centre to front edge of scoop. (mm)
-#define SCOOP_LENGTH 310
+#define SCOOP_LENGTH 270
 
 // 23hs5628 step angle (degrees)
 #define STEP_ANGLE 1.8
@@ -28,13 +28,13 @@
 #define MOTOR_SPEED 500.0f
 
 // 23hs5628 Acceleration (mm/s/s)
-#define MOTOR_ACCEL 100.0f
+#define MOTOR_ACCEL 50.0f
 
 // Microstep multiplier. E.g. 1, 2, 4, 8, etc.
 #define MICROSTEPS 8
 
 // Rate to move arms (degs per second)
-#define ARM_SPEED 25
+#define ARM_SPEED 20
 
 // Rate to move ramp (degs per second)
 #define RAMP_SPEED 12
@@ -44,11 +44,11 @@ Pre-determined Servo Positions (degrees, 0-180)
 */
 
 // Ramp neutral angle (aka flat)
-#define RAMP_ANGLE_NEUTRAL 90
-#define RAMP_ANGLE_DUMP 120
+#define RAMP_ANGLE_NEUTRAL 140
+#define RAMP_ANGLE_DUMP 0
 
 // Arms open
-#define ARMS_OPEN 0
+#define ARMS_OPEN 150
 
 // Arms closed
-#define ARMS_CLOSED 80
+#define ARMS_CLOSED 20
