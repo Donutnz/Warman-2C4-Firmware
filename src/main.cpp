@@ -67,6 +67,11 @@ Blocking
 */
 void awaitButton();
 
+/*
+Reset current stepper position to 0. Does not move steppers.
+*/
+void resetPosition();
+
 // Declare Steppers
 SpeedyStepper wheelR;
 SpeedyStepper wheelL;
@@ -226,55 +231,50 @@ void loop() {
 
 		switch (taskCounter){
 		case 0: //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			int dist = 180;
-			float moveTime = dist / (MOTOR_SPEED*MICROSTEPS);
+			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS);
 
-			driveRel(dist);
+			driveAbs(490);
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
-		case 1: //Close arms to capture balls. 
+		case 1: //Close arms to capture balls.
+			driveAbs(675);
+
 			moveArms(ARMS_CLOSED);
-			delay(1000); //Let balls settle.
 			break;
 		case 2: //Turn so rear faces ramp edge.
-			turnPivot(-90, LEFT_WHEEL); //Turn to be perpendicular to edge of ramp. Easier to climb the 16mm curb?
+			turnNeutral(90);
 			break;
 		case 3:
-			driveRel(-100); //Climb onto seesaw.
+			resetPosition(); // Reset pos ready for seesaw positions
+
+			driveAbs(-(370 + 760)); //Climb onto seesaw.
 			break;
 		case 4: //Drive over pivot and pause for seesaw to drop
-			driveRel(-700);
-			delay(3000);
+			delay(2000);
+
+			driveRel(-(430 + 400));
 			break;
-		case 5: //Slightly tweak position to avoid hitting dump zone edge on ramp dismount 
-			turnNeutral(45);
-			break;
-		case 6:
-			driveRel(-200);
-			break;
-		case 7: //Rotate to be perpendicular to seesaw edge.
-			turnNeutral(-45); 
-		case 8: //Dismount seesaw
-			driveRel(-100);
-			break;
-		case 9: //Align to dump edge
+		case 5: // Drive down seesaw and to position in line with dump zone.
 			turnNeutral(-90);
 			break;
-		case 10: //Drive up to drop zone edge
-			driveRel(-300);
+		case 6: // Drive up to edge of dump zone.
+			driveRel(-225);
 			break;
-		case 11: //Dump balls
+		case 7: //Dump balls
 			tiltRamp(RAMP_ANGLE_DUMP);
-			delay(3000);
 			break;
-		case 12: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
-			tiltRamp(RAMP_ANGLE_NEUTRAL);
+		case 8: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
+			delay(3000); //Let balls leave
+
 			wheelR.setAccelerationInMillimetersPerSecondPerSecond(10000); //Hard brake
 			wheelL.setAccelerationInMillimetersPerSecondPerSecond(10000);
-			driveRel(400);
+
+			tiltRamp(RAMP_ANGLE_NEUTRAL);
+			
+			driveRel(300);
 			break;
-		case 13: //End. Celebratory LED flashes
+		case 9: //End. Celebratory LED flashes
 			while(1){
 				digitalWrite(LED_BUILTIN, HIGH);
 				delay(500);
@@ -378,4 +378,9 @@ void awaitButton(){
 #ifdef SERIAL_BOT
 	Serial.println("Button done");
 #endif
+}
+
+void resetPosition(){
+	wheelL.setCurrentPositionInMillimeters(0);
+	wheelR.setCurrentPositionInMillimeters(0);
 }

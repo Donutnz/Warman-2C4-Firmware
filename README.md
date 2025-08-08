@@ -8,6 +8,7 @@ Warman 2025 Group 2C4 bot.
 
 # Usage
 - Wire stepper motor coils identically. Reversing is handled in software.
+- In the task list, delays must be put at the beginning of the next task rather than the end of the current task to work properly. This is due to how things are executed.
 
 # Dependencies
 - PlatformIO
@@ -19,10 +20,13 @@ Warman 2025 Group 2C4 bot.
 - Develop task list
 - Finalise task list
 - Create pathing
+- Add tone module support
 - Second LED?
 - Second switch?
 - Tune smooth steppers
 - Tune servo positions
+- Queable servo positions?
+    - Allows multiple servo moves during continous wheel movement.
 
 # Done
 - Build task list
