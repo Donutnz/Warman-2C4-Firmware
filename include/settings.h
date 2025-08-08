@@ -21,6 +21,9 @@
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
 
+// Length of arms. (mm) 
+#define ARM_LENGTH 290
+
 // 23hs5628 step angle (degrees)
 #define STEP_ANGLE 1.8
 

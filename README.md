@@ -6,6 +6,9 @@ Firmware for SLAPBOT.
 
 Warman 2025 Group 2C4 bot.
 
+# Usage
+- Wire stepper motor coils identically. Reversing is handled in software.
+
 # Dependencies
 - PlatformIO
 - SpeedyStepper

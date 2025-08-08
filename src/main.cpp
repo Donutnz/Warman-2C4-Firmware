@@ -5,19 +5,19 @@
 #include "pins.h"
 #include "settings.h"
 
-/* TODO
-
-- everything
-
-Might end up doing a "moves are objects, iterate thru list of them" approach if moves get too complicated".
-*/
-
 /*
-Simple fwd or back move.
+Simple fwd or back move. Relative.
 
 @param distance distance to travel in mm.
 */
-void moveLinear(float distance);
+void driveRel(float distance);
+
+/*
+Absolute fwd and back movement.
+
+@param distance Distance to move in mm.
+*/
+void driveAbs(float distance);
 
 /*
 Rotate around centre.
@@ -33,8 +33,8 @@ Pivot on one wheel.
 
 One wheel braked, the other driven.
 
-@param finalAngle The angle to rotate to
-@param turnRight Stationary wheel. Use RIGHT_WHEEL and LEFT_WHEEL I.e. right wheel is braked, left wheel is driven.
+@param targetAngle The angle to rotate to
+@param aroundRight Stationary wheel. Use RIGHT_WHEEL and LEFT_WHEEL I.e. right wheel is braked, left wheel is driven.
 */
 void turnPivot(float targetAngle, int aroundRight);
 
@@ -44,6 +44,14 @@ Move arms to angle.
 @param armsAngle Set angle of grabber arms. 0-180 degrees.
 */
 void moveArms(float armsAngle);
+
+/*
+Move arms to angle with actuation duration used to determine speed.
+
+@param armsAngle Set angle of grabber arms. 0-180 degrees.
+@param actTime Time in ms for actuation to complete. 
+*/
+void moveArms(float armsAngle, float actTime);
 
 /*
 Set ramp angle.
@@ -123,18 +131,21 @@ void setup() {
 	// Init Steppers
 	pinMode(STEPPER_R_EN, OUTPUT); //May not need this. Leave floating? Disconnect?
 	pinMode(STEPPER_L_EN, OUTPUT);
+	
+	pinMode(STEPPER_R_PULSE, OUTPUT);
+	pinMode(STEPPER_L_PULSE, OUTPUT);
+	
+	pinMode(STEPPER_R_DIR, OUTPUT);
+	pinMode(STEPPER_L_DIR, OUTPUT);
+	
+	digitalWrite(STEPPER_L_DIR, HIGH);
+	
+	// Enable the stepper motors
 	digitalWrite(STEPPER_R_EN, LOW);
 	digitalWrite(STEPPER_L_EN, LOW);
 
-	pinMode(STEPPER_R_PULSE, OUTPUT);
-	pinMode(STEPPER_R_DIR, OUTPUT);
-
-	pinMode(STEPPER_L_PULSE, OUTPUT);
-	pinMode(STEPPER_L_DIR, OUTPUT);
-
-	digitalWrite(STEPPER_L_DIR, HIGH);
-
 /*
+	// Old style stepping. Just for the odd testing.
 	while(true){
 		digitalWrite(STEPPER_L_PULSE, HIGH);
 		delayMicroseconds(500);
@@ -214,40 +225,44 @@ void loop() {
 #endif
 
 		switch (taskCounter){
-		case 0: //Open arms and drive to ball collection
-			moveArms(ARMS_OPEN);
-			moveLinear(450);
+		case 0: //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
+			int dist = 180;
+			float moveTime = dist / (MOTOR_SPEED*MICROSTEPS);
+
+			driveRel(dist);
+			
+			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
-		case 1: //Close arms to capture balls
+		case 1: //Close arms to capture balls. 
 			moveArms(ARMS_CLOSED);
-			delay(2000); //Let balls settle.
+			delay(1000); //Let balls settle.
 			break;
 		case 2: //Turn so rear faces ramp edge.
 			turnPivot(-90, LEFT_WHEEL); //Turn to be perpendicular to edge of ramp. Easier to climb the 16mm curb?
 			break;
 		case 3:
-			moveLinear(-100); //Climb onto seesaw.
+			driveRel(-100); //Climb onto seesaw.
 			break;
 		case 4: //Drive over pivot and pause for seesaw to drop
-			moveLinear(-700);
+			driveRel(-700);
 			delay(3000);
 			break;
 		case 5: //Slightly tweak position to avoid hitting dump zone edge on ramp dismount 
 			turnNeutral(45);
 			break;
 		case 6:
-			moveLinear(-200);
+			driveRel(-200);
 			break;
 		case 7: //Rotate to be perpendicular to seesaw edge.
 			turnNeutral(-45); 
 		case 8: //Dismount seesaw
-			moveLinear(-100);
+			driveRel(-100);
 			break;
 		case 9: //Align to dump edge
 			turnNeutral(-90);
 			break;
 		case 10: //Drive up to drop zone edge
-			moveLinear(-300);
+			driveRel(-300);
 			break;
 		case 11: //Dump balls
 			tiltRamp(RAMP_ANGLE_DUMP);
@@ -257,7 +272,7 @@ void loop() {
 			tiltRamp(RAMP_ANGLE_NEUTRAL);
 			wheelR.setAccelerationInMillimetersPerSecondPerSecond(10000); //Hard brake
 			wheelL.setAccelerationInMillimetersPerSecondPerSecond(10000);
-			moveLinear(400);
+			driveRel(400);
 			break;
 		case 13: //End. Celebratory LED flashes
 			while(1){
@@ -280,9 +295,17 @@ void loop() {
 	wheelR.processMovement();
 }
 
-void moveLinear(float distance){
+
+// Function Defs
+
+void driveRel(float distance){
 	wheelL.setupRelativeMoveInMillimeters(distance*-1);
 	wheelR.setupRelativeMoveInMillimeters(distance);
+}
+
+void driveAbs(float distance){
+	wheelL.setupMoveInMillimeters(distance*-1);
+	wheelR.setupMoveInMillimeters(distance);
 }
 
 void turnNeutral(float targetAngle){
@@ -299,9 +322,19 @@ void turnPivot(float targetAngle, int aroundRight){
 	}
 }
 
-void moveArms(float armsAngle){
-	armR.setEaseTo(armsAngle);
-	armL.setEaseTo(armsAngle);
+void moveArms(int targetAngle){
+	armR.setEaseTo(targetAngle);
+	armL.setEaseTo(targetAngle);
+
+	return;
+}
+
+void moveArms(int targetAngle, float actTime){
+	float delta_Angle = abs(armR.getCurrentAngle() - targetAngle) * (PI/180); //Delta angle in radians
+	uint_fast16_t angVelocity = (delta_Angle / actTime) * (180/PI); // Angular velocity in degrees per second
+	
+	armR.setEaseTo(targetAngle, angVelocity);
+	armL.setEaseTo(targetAngle, angVelocity);
 
 	return;
 }
