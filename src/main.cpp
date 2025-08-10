@@ -134,30 +134,12 @@ void setup() {
 #endif
 
 	// Init Steppers
-	pinMode(STEPPER_R_EN, OUTPUT); //May not need this. Leave floating? Disconnect?
+	pinMode(STEPPER_R_EN, OUTPUT); //May not need this. Can leave floating or hardware disconnect.
 	pinMode(STEPPER_L_EN, OUTPUT);
-	
-	pinMode(STEPPER_R_PULSE, OUTPUT);
-	pinMode(STEPPER_L_PULSE, OUTPUT);
-	
-	pinMode(STEPPER_R_DIR, OUTPUT);
-	pinMode(STEPPER_L_DIR, OUTPUT);
-	
-	digitalWrite(STEPPER_L_DIR, HIGH);
 	
 	// Enable the stepper motors
 	digitalWrite(STEPPER_R_EN, LOW);
 	digitalWrite(STEPPER_L_EN, LOW);
-
-/*
-	// Old style stepping. Just for the odd testing.
-	while(true){
-		digitalWrite(STEPPER_L_PULSE, HIGH);
-		delayMicroseconds(500);
-		digitalWrite(STEPPER_L_PULSE, LOW);
-		delayMicroseconds(500);
-	}
-*/
 
 	wheelR.connectToPins(STEPPER_R_PULSE, STEPPER_R_DIR);
 	wheelL.connectToPins(STEPPER_L_PULSE, STEPPER_L_DIR);
@@ -170,14 +152,6 @@ void setup() {
 	wheelL.setSpeedInMillimetersPerSecond(MOTOR_SPEED*MICROSTEPS); 
 	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
 	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
-
-	//wheelR.setSpeedInStepsPerSecond(400);
-	//wheelL.setSpeedInStepsPerSecond(400);
-	//wheelR.setAccelerationInStepsPerSecondPerSecond(200);
-	//wheelL.setAccelerationInStepsPerSecondPerSecond(200);
-
-	//wheelR.moveRelativeInMillimeters(500);
-	//wheelL.moveRelativeInMillimeters(500);
 
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
@@ -226,17 +200,18 @@ void loop() {
 
 #ifdef SERIAL_BOT
 		Serial.print("Task Num: ");
-		Serial.prinln(taskCounter);
+		Serial.println(taskCounter);
 #endif
 
-		switch (taskCounter){
-		case 0: //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
+		 switch (taskCounter){
+		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
 			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS);
 
 			driveAbs(490);
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
+		}
 		case 1: //Close arms to capture balls.
 			driveAbs(675);
 
@@ -299,16 +274,31 @@ void loop() {
 // Function Defs
 
 void driveRel(float distance){
+#ifdef SERIAL_BOT
+	Serial.print("Rel Drive: ");
+	Serial.println(distance);
+#endif
+
 	wheelL.setupRelativeMoveInMillimeters(distance*-1);
 	wheelR.setupRelativeMoveInMillimeters(distance);
 }
 
 void driveAbs(float distance){
+#ifdef SERIAL_BOT
+	Serial.print("Abs Drive: ");
+	Serial.println(distance);
+#endif
+
 	wheelL.setupMoveInMillimeters(distance*-1);
 	wheelR.setupMoveInMillimeters(distance);
 }
 
 void turnNeutral(float targetAngle){
+#ifdef SERIAL_BOT
+	Serial.print("Neutral Ang: ");
+	Serial.println(targetAngle);
+#endif
+
 	wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*neutralMMperDeg);
 	wheelR.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 }
@@ -322,14 +312,14 @@ void turnPivot(float targetAngle, int aroundRight){
 	}
 }
 
-void moveArms(int targetAngle){
+void moveArms(float targetAngle){
 	armR.setEaseTo(targetAngle);
 	armL.setEaseTo(targetAngle);
 
 	return;
 }
 
-void moveArms(int targetAngle, float actTime){
+void moveArms(float targetAngle, float actTime){
 	float delta_Angle = abs(armR.getCurrentAngle() - targetAngle) * (PI/180); //Delta angle in radians
 	uint_fast16_t angVelocity = (delta_Angle / actTime) * (180/PI); // Angular velocity in degrees per second
 	

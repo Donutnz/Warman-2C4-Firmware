@@ -17,6 +17,7 @@ Warman 2025 Group 2C4 bot.
 - 
 
 # TODO
+- Neutral turn not working
 - Develop task list
 - Finalise task list
 - Create pathing
@@ -42,6 +43,8 @@ Warman 2025 Group 2C4 bot.
 - Debug serial output?
 - Switch reading
 
+# BUGS
+- R Stepper direction pin is pin 1, which is one of the arduino serial pins. This causes issues with programming and serial output.
 
 # Notes
 - Test in Wokwi

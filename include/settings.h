@@ -3,7 +3,7 @@
 // Settings about the bot
 
 //Enable to activate debug mode
-//#define DEBUG_BOT
+#define DEBUG_BOT
 
 //Enable Serial Comms
 //#define SERIAL_BOT
@@ -51,7 +51,7 @@ Pre-determined Servo Positions (degrees, 0-180)
 #define RAMP_ANGLE_DUMP 0
 
 // Arms open
-#define ARMS_OPEN 150
+#define ARMS_OPEN 120 //150
 
 // Arms closed
-#define ARMS_CLOSED 20
+#define ARMS_CLOSED 30 //20
