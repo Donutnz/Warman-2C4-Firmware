@@ -47,11 +47,11 @@ Pre-determined Servo Positions (degrees, 0-180)
 */
 
 // Ramp neutral angle (aka flat)
-#define RAMP_ANGLE_NEUTRAL 140
-#define RAMP_ANGLE_DUMP 0
+#define RAMP_ANGLE_NEUTRAL 120
+#define RAMP_ANGLE_DUMP 30
 
 // Arms open
-#define ARMS_OPEN 120 //150
+#define ARMS_OPEN 100 //150
 
 // Arms closed
 #define ARMS_CLOSED 30 //20

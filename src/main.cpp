@@ -203,7 +203,7 @@ void loop() {
 		Serial.println(taskCounter);
 #endif
 
-		 switch (taskCounter){
+		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
 			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS);
 
@@ -218,7 +218,7 @@ void loop() {
 			moveArms(ARMS_CLOSED);
 			break;
 		case 2: //Turn so rear faces ramp edge.
-			turnNeutral(90);
+			turnNeutral(-90);
 			break;
 		case 3:
 			resetPosition(); // Reset pos ready for seesaw positions
@@ -299,7 +299,7 @@ void turnNeutral(float targetAngle){
 	Serial.println(targetAngle);
 #endif
 
-	wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*neutralMMperDeg);
+	wheelL.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 	wheelR.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 }
 
