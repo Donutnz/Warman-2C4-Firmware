@@ -31,7 +31,7 @@
 #define MOTOR_SPEED 500.0f
 
 // 23hs5628 Edge climb speed (mm/s)
-#define CLIMB_SPEED 100.0f
+#define CLIMB_SPEED 50.0f
 
 // 23hs5628 Acceleration (mm/s/s)
 #define MOTOR_ACCEL 200.0f
@@ -44,6 +44,9 @@
 
 // Rate to move ramp (degs per second)
 #define RAMP_SPEED 40
+
+// Tone frequency (hz)
+#define TONE_FREQ 1000
 
 /*
 Pre-determined Servo Positions (degrees, 0-180)

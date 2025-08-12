@@ -17,8 +17,6 @@
 #define SERVO_L_ARM 10
 #define SERVO_RAMP_L 6
 #define SERVO_RAMP_R 5
-#define SERVO_AUX 11
-
 
 // Rx Inputs
 #define RX_IN_0 A0
@@ -28,5 +26,6 @@
 
 // Other
 #define RUN_SWITCH 12 //Active LOW
+#define TONE_PIN 11
 
 //Status LED -> LED_BUILTIN

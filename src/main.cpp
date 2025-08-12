@@ -104,6 +104,8 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(RUN_SWITCH, INPUT_PULLUP);
 
+	pinMode(TONE_PIN, OUTPUT);
+
 	digitalWrite(LED_BUILTIN, LOW); //Start low
 
 #ifdef SERIAL_BOT
@@ -182,6 +184,8 @@ void setup() {
 #ifdef SERIAL_BOT
 	Serial.println("Ready to go...");
 #endif
+
+	tone(TONE_PIN, TONE_FREQ, 250);
 
 	//Wait for GO!
 	awaitButton();
@@ -267,10 +271,12 @@ void loop() {
 			break;
 		case 9: //End. Celebratory LED flashes
 			while(1){
-				digitalWrite(LED_BUILTIN, HIGH);
-				delay(500);
 				digitalWrite(LED_BUILTIN, LOW);
-				delay(500);
+				tone(TONE_PIN, TONE_FREQ);
+				delay(250);
+				digitalWrite(LED_BUILTIN, HIGH);
+				noTone(TONE_PIN);
+				delay(250);
 			}
 			break;
 		default:
