@@ -17,19 +17,23 @@ Warman 2025 Group 2C4 bot.
 - 
 
 # TODO
-- Neutral turn not working
 - Develop task list
 - Finalise task list
 - Create pathing
 - Add tone module support
-- Second LED?
-- Second switch?
 - Tune smooth steppers
 - Tune servo positions
+
+# Maybe todo
+- Second LED?
+- Second switch?
 - Queable servo positions?
     - Allows multiple servo moves during continous wheel movement.
+- Sync firing of servo moves (specifically arms) to stepper posistion rather than task. Would allow multiple servo moves in one stepper move.
+    - Use if/else if with stepper.getCurrentPositionInMillimeters() method.
 
 # Done
+- Neutral turn not working
 - Build task list
 - Test task list
 - Add LED flashes for states

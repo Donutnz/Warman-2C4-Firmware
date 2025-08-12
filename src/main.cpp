@@ -72,6 +72,13 @@ Reset current stepper position to 0. Does not move steppers.
 */
 void resetPosition();
 
+/*
+Set speed of drive movements in mm/s
+
+@param groundSpeed speed in mm/s
+*/
+void setGroundSpeed(float groundSpeed);
+
 // Declare Steppers
 SpeedyStepper wheelR;
 SpeedyStepper wheelL;
@@ -128,7 +135,6 @@ void setup() {
 
 	setEasingTypeForAllServos(EASE_QUADRATIC_IN_OUT); //Is this best curve?
 
-
 #ifdef SERIAL_BOT
 	Serial.println("Init steppers...");
 #endif
@@ -144,12 +150,11 @@ void setup() {
 	wheelR.connectToPins(STEPPER_R_PULSE, STEPPER_R_DIR);
 	wheelL.connectToPins(STEPPER_L_PULSE, STEPPER_L_DIR);
 
-	float stepsPerMM = (360 / STEP_ANGLE) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
-	wheelR.setStepsPerMillimeter(stepsPerMM*MICROSTEPS);
-	wheelL.setStepsPerMillimeter(stepsPerMM*MICROSTEPS);
+	float stepsPerMM = (360 / (STEP_ANGLE / MICROSTEPS)) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
+	wheelR.setStepsPerMillimeter(stepsPerMM);
+	wheelL.setStepsPerMillimeter(stepsPerMM);
 
-	wheelR.setSpeedInMillimetersPerSecond(MOTOR_SPEED*MICROSTEPS); //Tweak this in testing.
-	wheelL.setSpeedInMillimetersPerSecond(MOTOR_SPEED*MICROSTEPS); 
+	setGroundSpeed(MOTOR_SPEED);
 	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
 	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
 
@@ -185,12 +190,21 @@ void setup() {
 }
 
 void loop() {
+
+	// Handle opening and closing arms without stopping the steppers for ball capture.
+	if(!isOneServoMoving()){
+		float curPos=wheelL.getCurrentPositionInMillimeters();
+
+		if(abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 20){
+			moveArms(ARMS_CLOSED);
+		}
+	}
+
 	/*
 	Go through list of tasks to run. Position in list is handled by the task counter.
 
 	Core of everything.
 	*/
-
 	if(wheelL.motionComplete() && wheelR.motionComplete() && !isOneServoMoving()){ //Make sure current task is complete before going to next one
 		
 #if defined(DEBUG_BOT)
@@ -205,30 +219,32 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS);
+			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls
 
-			driveAbs(490);
+			//driveAbs(490);
+			driveAbs(675);
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
 		}
-		case 1: //Close arms to capture balls.
-			driveAbs(675);
-
-			moveArms(ARMS_CLOSED);
-			break;
-		case 2: //Turn so rear faces ramp edge.
+		case 1: //Turn so rear faces ramp edge.
 			turnNeutral(-90);
 			break;
-		case 3:
-			resetPosition(); // Reset pos ready for seesaw positions
+		case 2:
+			//resetPosition(); // Reset pos ready for seesaw positions
 
-			driveAbs(-(370 + 760)); //Climb onto seesaw.
+			setGroundSpeed(CLIMB_SPEED);
+			driveRel(-(370 + 760)); //Climb onto seesaw.
+			break;
+		case 3: // Back up as the seesaw falls to be more centered and less likely to bounce.
+			setGroundSpeed(MOTOR_SPEED);
+			driveRel(170);
 			break;
 		case 4: //Drive over pivot and pause for seesaw to drop
-			delay(2000);
+			//delay(2000);
 
-			driveRel(-(430 + 400));
+			setGroundSpeed(MOTOR_SPEED);
+			driveRel(-(430 + 400 + 170));
 			break;
 		case 5: // Drive down seesaw and to position in line with dump zone.
 			turnNeutral(-90);
@@ -371,6 +387,11 @@ void awaitButton(){
 }
 
 void resetPosition(){
-	wheelL.setCurrentPositionInMillimeters(0);
 	wheelR.setCurrentPositionInMillimeters(0);
+	wheelL.setCurrentPositionInMillimeters(0);
+}
+
+void setGroundSpeed(float groundSpeed){
+	wheelR.setSpeedInMillimetersPerSecond(groundSpeed*MICROSTEPS);
+	wheelL.setSpeedInMillimetersPerSecond(groundSpeed*MICROSTEPS); 
 }
