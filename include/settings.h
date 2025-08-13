@@ -13,10 +13,10 @@
 #define LEFT_WHEEL 0
 
 // Wheel OD for calculating move dist from rotation (mm)
-#define WHEEL_OD 112 //100mm diameter wheel with 2mm thick tyre thing.
+#define WHEEL_OD 116 //100mm diameter wheel with 4mm thick tyre thing.
 
 // Lateral distance between wheel centres. (mm)
-#define TRACK_WIDTH 335
+#define TRACK_WIDTH 380
 
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
@@ -28,19 +28,19 @@
 #define STEP_ANGLE 1.8
 
 // 23hs5628 Speed (mm/s)
-#define MOTOR_SPEED 500.0f
+#define MOTOR_SPEED 500.0f //500.0f
 
 // 23hs5628 Edge climb speed (mm/s)
-#define CLIMB_SPEED 50.0f
+#define CLIMB_SPEED 10.0f
 
 // 23hs5628 Acceleration (mm/s/s)
-#define MOTOR_ACCEL 200.0f
+#define MOTOR_ACCEL 1000.0f //200
 
 // Microstep multiplier. E.g. 1, 2, 4, 8, etc.
-#define MICROSTEPS 8
+#define MS_STEPS 8
 
 // Rate to move arms (degs per second)
-#define ARM_SPEED 50 //20 is safe speed
+#define ARM_SPEED 60 //50
 
 // Rate to move ramp (degs per second)
 #define RAMP_SPEED 40

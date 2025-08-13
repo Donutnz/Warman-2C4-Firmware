@@ -152,13 +152,13 @@ void setup() {
 	wheelR.connectToPins(STEPPER_R_PULSE, STEPPER_R_DIR);
 	wheelL.connectToPins(STEPPER_L_PULSE, STEPPER_L_DIR);
 
-	float stepsPerMM = (360 / (STEP_ANGLE / MICROSTEPS)) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
+	float stepsPerMM = (360 / (STEP_ANGLE/MS_STEPS)) / (2 * PI * (WHEEL_OD / 2)); // steps per mm. Dbl check this maths.
 	wheelR.setStepsPerMillimeter(stepsPerMM);
 	wheelL.setStepsPerMillimeter(stepsPerMM);
 
 	setGroundSpeed(MOTOR_SPEED);
-	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
-	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MICROSTEPS);
+	wheelR.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MS_STEPS);
+	wheelL.setAccelerationInMillimetersPerSecondPerSecond(MOTOR_ACCEL*MS_STEPS);
 
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
@@ -223,9 +223,9 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 180 / (MOTOR_SPEED*MICROSTEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls
+			float moveTime = 180 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls
 
-			//driveAbs(490);
+			//driveAbs(339.292); //360deg
 			driveAbs(675);
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
@@ -398,6 +398,6 @@ void resetPosition(){
 }
 
 void setGroundSpeed(float groundSpeed){
-	wheelR.setSpeedInMillimetersPerSecond(groundSpeed*MICROSTEPS);
-	wheelL.setSpeedInMillimetersPerSecond(groundSpeed*MICROSTEPS); 
+	wheelR.setSpeedInMillimetersPerSecond(groundSpeed*MS_STEPS);
+	wheelL.setSpeedInMillimetersPerSecond(groundSpeed*MS_STEPS); 
 }
