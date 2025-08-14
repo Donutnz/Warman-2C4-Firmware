@@ -31,7 +31,10 @@
 #define MOTOR_SPEED 500.0f //500.0f
 
 // 23hs5628 Edge climb speed (mm/s)
-#define CLIMB_SPEED 18.0f //20
+#define CLIMB_SPEED 18.0f //18
+
+// 23hs5628 Edge climb speed (mm/s)
+#define ESCAPE_SPEED 8.0f //18
 
 // 23hs5628 Turning speed (mm/s)
 #define TURN_SPEED 250.0f
@@ -52,10 +55,10 @@
 #define MS_STEPS 4 //8
 
 // Rate to move arms (degs per second)
-#define ARM_SPEED 90 //60
+#define ARM_SPEED 120 //60
 
 // Rate to move ramp (degs per second)
-#define RAMP_SPEED 40
+#define RAMP_SPEED 20 //40
 
 // Tone frequency (hz)
 #define TONE_FREQ 1000

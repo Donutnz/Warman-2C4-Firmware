@@ -243,7 +243,7 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 150 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
+			float moveTime = 80 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
 
 			//driveAbs(339.292); //360deg
 			driveAbs(630); //650
@@ -251,50 +251,47 @@ void loop() {
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
 		}
-		case 1: //Turn so rear faces ramp edge.
+		case 1: //Come back to align w drop box
+			driveAbs(270); //270. 475 to smash pivot
+			break;
+		case 2: //Turn so rear faces ramp edge.
 			setGroundSpeed(TURN_SPEED);
 			turnNeutral(-90);
 			break;
-		case 2: //Scoot up to ramp
+		case 3: //Scoot up to ramp
 			setGroundSpeed(MOTOR_SPEED);
 			driveRel(-350); //-350
 			break;
-		case 3: //Clamber onto seesaw and slowly climb up. Might change this to a slow clamber then a full send to the opposite edge of the seesaw.
+		case 4: // Clamber onto seesaw and slowly climb up. Slide down and smash box.
 			setGroundSpeed(CLIMB_SPEED);
-			driveRel(-(760 + 340)); //Just over center 330
+			driveRel(-(760 + 390)); //Just over center 340
 			break;
-		case 4: // Slide down seesaw.
-			turnNeutral(45);
-			break;
-		case 5: // Smash box, then turn to fix alignment. 
-			delay(1500); //2500
-			setGroundSpeed(TURN_SPEED);
-			turnPivot(30, LEFT_WHEEL);
-			break;
-		case 6: // Back off from smashed box.
-			setGroundSpeed(MOTOR_SPEED);
-			driveRel(150);
-			break;
-		case 7: // Turn back to face box.
-			setGroundSpeed(TURN_SPEED);
-			turnNeutral(-30);
-			break;
-		case 8: // Resmash box.
-			setGroundSpeed(MOTOR_SPEED);
-			driveRel(-200);
+		case 5:
 			tiltRamp(RAMP_ANGLE_DUMP);
 			break;
-		case 9: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
-			delay(2000); //Let balls leave
-
-			setAccelRate(10000); //Send it
-			setGroundSpeed(SEND_SPEED);
-
-			tiltRamp(RAMP_ANGLE_NEUTRAL);
-			
+/*
+		case 6: // Come off box
+			setGroundSpeed(ESCAPE_SPEED);
+			driveRel(100);
+			break;
+		case 7: // Turn to be parallel w box.
+			setGroundSpeed(TURN_SPEED);
+			turnPivot(90, LEFT_WHEEL);
+			break;
+		case 8: // Drive past to clear box
+			setGroundSpeed(MOTOR_SPEED);
 			driveRel(300);
 			break;
-		case 10: //End. Celebratory LED flashes and beeping.
+		case 9: // Turn to aim for end zone.
+			setGroundSpeed(TURN_SPEED);
+			turnPivot(90, LEFT_WHEEL);
+			break;
+		case 10: // Park.
+			setGroundSpeed(MOTOR_SPEED);
+			driveRel(100);
+			break;
+*/
+		case 6: // Party. Celebratory LED flashes and beeping. 11
 			while(1){
 				digitalWrite(LED_BUILTIN, LOW);
 				tone(TONE_PIN, TONE_FREQ);
