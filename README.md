@@ -23,6 +23,9 @@ Warman 2025 Group 2C4 bot.
 - Add tone module support
 - Tune smooth steppers
 - Tune servo positions
+- Delay after start button (w beep on actual start)
+- Slow down accel
+- Slow down accel/speed on turning
 
 # Maybe todo
 - Second LED?

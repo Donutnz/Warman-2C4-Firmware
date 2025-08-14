@@ -185,10 +185,16 @@ void setup() {
 	Serial.println("Ready to go...");
 #endif
 
-	tone(TONE_PIN, TONE_FREQ, 250);
+	tone(TONE_PIN, TONE_FREQ, 250); //Ready beep
 
 	//Wait for GO!
 	awaitButton();
+
+	tone(TONE_PIN, 500, 250); //About to go beep
+
+	delay(1000); // 2sec delay to get hands away
+
+	tone(TONE_PIN, TONE_FREQ, 250); //Go beep
 
 	digitalWrite(LED_BUILTIN, HIGH);
 }
@@ -223,7 +229,7 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 180 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls
+			float moveTime = 160 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
 
 			//driveAbs(339.292); //360deg
 			driveAbs(675);
@@ -232,34 +238,42 @@ void loop() {
 			break;
 		}
 		case 1: //Turn so rear faces ramp edge.
+			setGroundSpeed(TURN_SPEED);
 			turnNeutral(-90);
 			break;
-		case 2:
-			//resetPosition(); // Reset pos ready for seesaw positions
-
+		case 2: //Scoot up to ramp
+			setGroundSpeed(MOTOR_SPEED);
+			driveRel(-350);
+			break;
+		case 3: //Clamber onto seesaw and slowly climb up. Might change this to a slow clamber then a full send to the opposite edge of the seesaw.
 			setGroundSpeed(CLIMB_SPEED);
-			driveRel(-(370 + 760)); //Climb onto seesaw.
+			//driveRel(-(370 + 760 + 280)); //Climb onto seesaw.
+			//driveRel(-(370 + 1200 + 360)); //400 safe. Send it all the way.
+			driveRel(-(370 + 800 + 280)); //Just over center
 			break;
-		case 3: // Back up as the seesaw falls to be more centered and less likely to bounce.
-			setGroundSpeed(MOTOR_SPEED);
-			driveRel(170);
+		case 4: // Back up as the seesaw falls to be more centered and less likely to bounce.
+			//setGroundSpeed(MOTOR_SPEED);
+			//driveRel(85);
+			digitalWrite(STEPPER_R_EN, HIGH); //Free wheel for drift
 			break;
-		case 4: //Drive over pivot and pause for seesaw to drop
-			//delay(2000);
-
-			setGroundSpeed(MOTOR_SPEED);
-			driveRel(-(430 + 400 + 170));
+		case 5: //Drive off seesaw. Or slide.
+			delay(1500);
+			digitalWrite(STEPPER_R_EN, LOW); //Re-engage stepper drive
+			//setGroundSpeed(MOTOR_SPEED);
+			//driveRel(-(430 + 400 + 85));
 			break;
-		case 5: // Drive down seesaw and to position in line with dump zone.
+		case 6: // Rotate to face dump zone.
+			setGroundSpeed(TURN_SPEED);
 			turnNeutral(-90);
 			break;
-		case 6: // Drive up to edge of dump zone.
+		case 7: // Drive up to edge of dump zone.
+			setGroundSpeed(MOTOR_SPEED);
 			driveRel(-225);
 			break;
-		case 7: //Dump balls
+		case 8: //Dump balls
 			tiltRamp(RAMP_ANGLE_DUMP);
 			break;
-		case 8: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
+		case 9: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
 			delay(3000); //Let balls leave
 
 			wheelR.setAccelerationInMillimetersPerSecondPerSecond(10000); //Hard brake
@@ -269,7 +283,7 @@ void loop() {
 			
 			driveRel(300);
 			break;
-		case 9: //End. Celebratory LED flashes
+		case 10: //End. Celebratory LED flashes and beeping.
 			while(1){
 				digitalWrite(LED_BUILTIN, LOW);
 				tone(TONE_PIN, TONE_FREQ);
