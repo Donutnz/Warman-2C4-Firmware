@@ -79,6 +79,20 @@ Set speed of drive movements in mm/s
 */
 void setGroundSpeed(float groundSpeed);
 
+/*
+Set speed of drive movements in mm/s
+
+@param accelRate acceleration in mm/s/s
+*/
+void setAccelRate(float accelRate);
+
+/*
+Activate Anti-Lock braking system.
+
+@param actDuration How long the pulsing lasts.
+*/
+void fireABS(unsigned long actDuration);
+
 // Declare Steppers
 SpeedyStepper wheelR;
 SpeedyStepper wheelL;
@@ -229,10 +243,10 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 160 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
+			float moveTime = 150 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
 
 			//driveAbs(339.292); //360deg
-			driveAbs(675);
+			driveAbs(630); //650
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
@@ -243,28 +257,37 @@ void loop() {
 			break;
 		case 2: //Scoot up to ramp
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(-350);
+			driveRel(-350); //-350
 			break;
 		case 3: //Clamber onto seesaw and slowly climb up. Might change this to a slow clamber then a full send to the opposite edge of the seesaw.
 			setGroundSpeed(CLIMB_SPEED);
 			//driveRel(-(370 + 760 + 280)); //Climb onto seesaw.
 			//driveRel(-(370 + 1200 + 360)); //400 safe. Send it all the way.
-			driveRel(-(370 + 800 + 280)); //Just over center
+			driveRel(-(760 + 330)); //Just over center 330
 			break;
 		case 4: // Back up as the seesaw falls to be more centered and less likely to bounce.
 			//setGroundSpeed(MOTOR_SPEED);
 			//driveRel(85);
-			digitalWrite(STEPPER_R_EN, HIGH); //Free wheel for drift
+			//setGroundSpeed(SEND_SPEED);
+			//setAccelRate(1200);
+
+			digitalWrite(STEPPER_L_EN, HIGH); //Free wheel for drift
+			//turnPivot(-30, LEFT_WHEEL);
+			//setGroundSpeed(TURN_SPEED);
+			//turnNeutral(45);
+			//fireABS(3000);
 			break;
 		case 5: //Drive off seesaw. Or slide.
 			delay(1500);
-			digitalWrite(STEPPER_R_EN, LOW); //Re-engage stepper drive
+			digitalWrite(STEPPER_L_EN, LOW); //Re-engage stepper drive
 			//setGroundSpeed(MOTOR_SPEED);
+			//setAccelRate(MOTOR_ACCEL);
+
 			//driveRel(-(430 + 400 + 85));
 			break;
 		case 6: // Rotate to face dump zone.
 			setGroundSpeed(TURN_SPEED);
-			turnNeutral(-90);
+			turnNeutral(180);
 			break;
 		case 7: // Drive up to edge of dump zone.
 			setGroundSpeed(MOTOR_SPEED);
@@ -276,8 +299,7 @@ void loop() {
 		case 9: //Stow ramp and drive to end zone. Might set deccel value to 0 for a hard brake stop. Buzzer?
 			delay(3000); //Let balls leave
 
-			wheelR.setAccelerationInMillimetersPerSecondPerSecond(10000); //Hard brake
-			wheelL.setAccelerationInMillimetersPerSecondPerSecond(10000);
+			setAccelRate(10000); //Send it
 
 			tiltRamp(RAMP_ANGLE_NEUTRAL);
 			
@@ -414,4 +436,23 @@ void resetPosition(){
 void setGroundSpeed(float groundSpeed){
 	wheelR.setSpeedInMillimetersPerSecond(groundSpeed*MS_STEPS);
 	wheelL.setSpeedInMillimetersPerSecond(groundSpeed*MS_STEPS); 
+}
+
+void setAccelRate(float accelRate){
+	wheelR.setAccelerationInMillimetersPerSecondPerSecond(accelRate*MS_STEPS);
+	wheelL.setAccelerationInMillimetersPerSecondPerSecond(accelRate*MS_STEPS);
+}
+
+void fireABS(unsigned long actDuration){
+
+	unsigned long endT = millis() + actDuration;
+
+	while(millis() <= endT){
+		digitalWrite(STEPPER_R_EN, HIGH);
+		digitalWrite(STEPPER_L_EN, HIGH);
+		delay(ABS_FREQ/2);
+		digitalWrite(STEPPER_R_EN, LOW);
+		digitalWrite(STEPPER_L_EN, LOW);
+		delay(ABS_FREQ/2);
+	}
 }

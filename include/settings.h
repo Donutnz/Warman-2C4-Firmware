@@ -16,7 +16,7 @@
 #define WHEEL_OD 116 //100mm diameter wheel with 4mm thick tyre thing.
 
 // Lateral distance between wheel centres. (mm)
-#define TRACK_WIDTH 373 //380
+#define TRACK_WIDTH 367 //373
 
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
@@ -39,20 +39,29 @@
 // 23hs5628 Full send speed (mm/s)
 #define SEND_SPEED 1500.0f
 
-// 23hs5628 Acceleration (mm/s/s)
+// 23hs5628 Ball collection approach speed
+#define APPROACH_SPEED 400.0f
+
+// 23hs5628 Default Acceleration (mm/s/s)
 #define MOTOR_ACCEL 600.0f //1000
+
+// 23hs5628 Hill Start Acceleration (mm/s/s)
+#define HILL_START_ACCEL 300.0f
 
 // Microstep multiplier. E.g. 1, 2, 4, 8, etc.
 #define MS_STEPS 4 //8
 
 // Rate to move arms (degs per second)
-#define ARM_SPEED 70 //60
+#define ARM_SPEED 90 //60
 
 // Rate to move ramp (degs per second)
 #define RAMP_SPEED 40
 
 // Tone frequency (hz)
 #define TONE_FREQ 1000
+
+// Frequency of ABS pulses. Roughly 5-15Hz range. (Hz)
+#define ABS_FREQ 15
 
 /*
 Pre-determined Servo Positions (degrees, 0-180)
@@ -71,4 +80,4 @@ Pre-determined Servo Positions (degrees, 0-180)
 // Special distances
 
 // Arms open to collect balls
-#define TRIGGER_ARMS_CLOSE_CAPTURE 450
+#define TRIGGER_ARMS_CLOSE_CAPTURE 420 //450
