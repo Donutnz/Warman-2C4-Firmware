@@ -263,7 +263,7 @@ void loop() {
 			setGroundSpeed(CLIMB_SPEED);
 			//driveRel(-(370 + 760 + 280)); //Climb onto seesaw.
 			//driveRel(-(370 + 1200 + 360)); //400 safe. Send it all the way.
-			driveRel(-(760 + 330)); //Just over center 330
+			driveRel(-(760 + 340)); //Just over center 330
 			break;
 		case 4: // Back up as the seesaw falls to be more centered and less likely to bounce.
 			//setGroundSpeed(MOTOR_SPEED);
@@ -271,27 +271,28 @@ void loop() {
 			//setGroundSpeed(SEND_SPEED);
 			//setAccelRate(1200);
 
-			digitalWrite(STEPPER_L_EN, HIGH); //Free wheel for drift
-			//turnPivot(-30, LEFT_WHEEL);
+			//digitalWrite(STEPPER_L_EN, HIGH); //Free wheel for drift
+			//turnPivot(-90, RIGHT_WHEEL);
 			//setGroundSpeed(TURN_SPEED);
-			//turnNeutral(45);
-			//fireABS(3000);
+			turnNeutral(45);
 			break;
 		case 5: //Drive off seesaw. Or slide.
-			delay(1500);
-			digitalWrite(STEPPER_L_EN, LOW); //Re-engage stepper drive
+			delay(2500);
+			//digitalWrite(STEPPER_L_EN, LOW); //Re-engage stepper drive
 			//setGroundSpeed(MOTOR_SPEED);
 			//setAccelRate(MOTOR_ACCEL);
 
 			//driveRel(-(430 + 400 + 85));
+			setGroundSpeed(TURN_SPEED);
+			turnPivot(30, LEFT_WHEEL);
 			break;
 		case 6: // Rotate to face dump zone.
-			setGroundSpeed(TURN_SPEED);
-			turnNeutral(180);
+			setGroundSpeed(MOTOR_SPEED);
+			driveRel(100);
 			break;
 		case 7: // Drive up to edge of dump zone.
-			setGroundSpeed(MOTOR_SPEED);
-			driveRel(-225);
+			setGroundSpeed(TURN_SPEED);
+			turnPivot(-30, LEFT_WHEEL);
 			break;
 		case 8: //Dump balls
 			tiltRamp(RAMP_ANGLE_DUMP);

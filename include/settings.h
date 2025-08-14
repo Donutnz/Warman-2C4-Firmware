@@ -16,7 +16,7 @@
 #define WHEEL_OD 116 //100mm diameter wheel with 4mm thick tyre thing.
 
 // Lateral distance between wheel centres. (mm)
-#define TRACK_WIDTH 367 //373
+#define TRACK_WIDTH 362 //367
 
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
