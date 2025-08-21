@@ -93,13 +93,6 @@ Set speed of drive movements in mm/s
 */
 void setAccelRate(float accelRate);
 
-/*
-Activate Anti-Lock braking system.
-
-@param actDuration How long the pulsing lasts.
-*/
-void fireABS(unsigned long actDuration);
-
 // Declare Steppers
 SpeedyStepper wheelR;
 SpeedyStepper wheelL;
@@ -147,7 +140,7 @@ void setup() {
 	armL.setSpeed(ARM_SPEED);
 	armR.setSpeed(ARM_SPEED);
 	
-	rampL.attach(SERVO_RAMP_L, FROG_ANGLE_NEUTRAL);
+	rampL.attach(SERVO_RAMP_L, 180 - FROG_ANGLE_NEUTRAL);
 	rampR.attach(SERVO_RAMP_R, FROG_ANGLE_NEUTRAL);
 	
 	rampL.setSpeed(RAMP_SPEED);
@@ -213,7 +206,7 @@ void setup() {
 
 	tone(TONE_PIN, 500, 250); //About to go beep
 
-	delay(1000); // 2sec delay to get hands away
+	delay(500); // 0.5sec delay to get hands away
 
 	tone(TONE_PIN, TONE_FREQ, 250); //Go beep
 
@@ -224,16 +217,14 @@ void loop() {
 
 	// Position triggers. Used for moving arms out of sync with usual tasks.
 	// Use target task + 1
-	if(!isOneServoMoving()){
-		float curPos=wheelL.getCurrentPositionInMillimeters();
+	float curPos=wheelL.getCurrentPositionInMillimeters();
 
-		if((abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 5) && taskCounter == 1){ // Close arms to capture balls
-			moveArms(ARMS_CLOSED);
-		}
-
-		if((abs(abs(curPos) - 180) < 5) && taskCounter == 9){ // Open arms to dump balls
-			moveArms(ARMS_OPEN);
-		}
+	if((abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 10) && taskCounter == 1 && !isOneServoMoving()){ // Close arms to capture balls
+		moveArms(ARMS_CLOSED);
+	}
+	
+	if((abs(abs(curPos) - 180) < 10) && taskCounter == 9){ // Open arms to dump balls
+		moveArms(ARMS_OPEN);
 	}
 
 	/*
@@ -279,32 +270,33 @@ void loop() {
 		case 3: //Slowly shove forks under ramp edge
 			setPosition(250); //Reset position to center dist from arena edge. Allows absolute moves under ramp.
 			setGroundSpeed(CRAWL_SPEED);
-			driveAbs(500); //Engage forks under ramp and begin lifting
+			driveAbs(420); //500 //Engage forks under ramp and begin lifting
 			break;
 		case 4: // Zoom under ramp 
 			setGroundSpeed(MOTOR_SPEED);
-			driveAbs(1345); // Drive up between ramp supports and overshoot with clearance for neutral turn.
+			driveAbs(1500); //1345 // Drive up between ramp supports and overshoot with clearance for neutral turn.
 			break;
 		case 5: // Pivot right to face arena north-western corner ish.
 			setGroundSpeed(TURN_SPEED);
-			turnNeutral(20.54); // Angle from SolidWorks plan.
+			turnNeutral(21.39); // Angle from SolidWorks plan.
 			break;
 		case 6: // Pootle towards north-east corner of finish zone. 
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(859.62); // Distance calc'ed from solidworks plan.
+			driveRel(826.94); //789.83 // Distance calc'ed from solidworks plan.
 			break;
 		case 7: // Face drop box
 			setGroundSpeed(TURN_SPEED);
-			turnNeutral(-110.54); // Angle from SolidWorks plan.
+			turnNeutral(-111.39); // Angle from SolidWorks plan.
+			liftBot(FROG_ANGLE_LIFT);
 			break;
 		case 8: // Stand up and advance on drop box.
 			setPosition(); // Reset pos to 0. For arms open to dump timing.
-			liftBot(FROG_ANGLE_LIFT);
 			// Arms open on a position trigger.
 			setGroundSpeed(MOTOR_SPEED);
 			driveAbs(241); // Over lip of box.
 			break;
 		case 9: // Shoot backwards off the box edge and settle ur bits.
+			delay(500); // Wait for balls to drop
 			moveArms(ARMS_CLOSED);
 			liftBot(FROG_ANGLE_NEUTRAL);
 			setGroundSpeed(SEND_SPEED);
@@ -450,18 +442,4 @@ void setGroundSpeed(float groundSpeed){
 void setAccelRate(float accelRate){
 	wheelR.setAccelerationInMillimetersPerSecondPerSecond(accelRate*MS_STEPS);
 	wheelL.setAccelerationInMillimetersPerSecondPerSecond(accelRate*MS_STEPS);
-}
-
-void fireABS(unsigned long actDuration){
-
-	unsigned long endT = millis() + actDuration;
-
-	while(millis() <= endT){
-		digitalWrite(STEPPER_R_EN, HIGH);
-		digitalWrite(STEPPER_L_EN, HIGH);
-		delay(ABS_FREQ/2);
-		digitalWrite(STEPPER_R_EN, LOW);
-		digitalWrite(STEPPER_L_EN, LOW);
-		delay(ABS_FREQ/2);
-	}
 }

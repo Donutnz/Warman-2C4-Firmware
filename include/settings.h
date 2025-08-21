@@ -16,7 +16,7 @@
 #define WHEEL_OD 116 //100mm diameter wheel with 4mm thick tyre thing.
 
 // Lateral distance between wheel centres. (mm)
-#define TRACK_WIDTH 362 //367
+#define TRACK_WIDTH 358 //360
 
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
@@ -34,10 +34,10 @@
 #define STEP_ANGLE 1.8
 
 // 23hs5628 Speed (mm/s)
-#define MOTOR_SPEED 480.0f //500.0f
+#define MOTOR_SPEED 200.0f //400
 
 // 23hs5628 Edge climb speed (mm/s)
-#define CRAWL_SPEED 18.0f //18
+#define CRAWL_SPEED 20.0f //30
 
 // 23hs5628 Turning speed (mm/s)
 #define TURN_SPEED 250.0f
@@ -58,13 +58,10 @@
 #define ARM_SPEED 120 //60
 
 // Rate to move ramp (degs per second)
-#define RAMP_SPEED 20 //40
+#define RAMP_SPEED 100 //20
 
 // Tone frequency (hz)
 #define TONE_FREQ 1000
-
-// Frequency of ABS pulses. Roughly 5-15Hz range. (Hz)
-#define ABS_FREQ 15
 
 /*
 Pre-determined Servo Positions (degrees, 0-180)
@@ -75,7 +72,7 @@ Pre-determined Servo Positions (degrees, 0-180)
 #define FROG_ANGLE_LIFT 100 //90
 
 // Arms open
-#define ARMS_OPEN 50 //40
+#define ARMS_OPEN 45 //50
 
 // Arms closed
 #define ARMS_CLOSED 150 //150
