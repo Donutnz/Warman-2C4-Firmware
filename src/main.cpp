@@ -243,7 +243,7 @@ void loop() {
 
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
-			float moveTime = 80 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
+			float moveTime = 50 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
 
 			//driveAbs(339.292); //360deg
 			driveAbs(630); //650
@@ -264,7 +264,7 @@ void loop() {
 			break;
 		case 4: // Clamber onto seesaw and slowly climb up. Slide down and smash box.
 			setGroundSpeed(CLIMB_SPEED);
-			driveRel(-(760 + 390)); //Just over center 340
+			driveRel(-(760 + 400)); //Just over center 340
 			break;
 		case 5:
 			tiltRamp(RAMP_ANGLE_DUMP);

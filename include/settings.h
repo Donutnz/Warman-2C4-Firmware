@@ -28,7 +28,7 @@
 #define STEP_ANGLE 1.8
 
 // 23hs5628 Speed (mm/s)
-#define MOTOR_SPEED 500.0f //500.0f
+#define MOTOR_SPEED 480.0f //500.0f
 
 // 23hs5628 Edge climb speed (mm/s)
 #define CLIMB_SPEED 18.0f //18
@@ -71,14 +71,14 @@ Pre-determined Servo Positions (degrees, 0-180)
 */
 
 // Ramp neutral angle (aka flat)
-#define RAMP_ANGLE_NEUTRAL 110
-#define RAMP_ANGLE_DUMP 0 //5
+#define RAMP_ANGLE_NEUTRAL 0 //90
+#define RAMP_ANGLE_DUMP 90 //0
 
 // Arms open
-#define ARMS_OPEN 150 //150
+#define ARMS_OPEN 50 //40
 
 // Arms closed
-#define ARMS_CLOSED 40 //20
+#define ARMS_CLOSED 150 //150
 
 // Special distances
 
