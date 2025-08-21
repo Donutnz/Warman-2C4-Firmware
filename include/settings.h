@@ -21,6 +21,12 @@
 // Distance from turning centre to front edge of scoop. (mm)
 #define SCOOP_LENGTH 270
 
+// Distance between the axle and the tips of the spikes. (mm)
+#define BOT_LENGTH 330
+
+// Total width of bot. Wheel outside to wheel outside.
+#define BOT_WIDTH 383
+
 // Length of arms. (mm) 
 #define ARM_LENGTH 290
 
@@ -31,10 +37,7 @@
 #define MOTOR_SPEED 480.0f //500.0f
 
 // 23hs5628 Edge climb speed (mm/s)
-#define CLIMB_SPEED 18.0f //18
-
-// 23hs5628 Edge climb speed (mm/s)
-#define ESCAPE_SPEED 8.0f //18
+#define CRAWL_SPEED 18.0f //18
 
 // 23hs5628 Turning speed (mm/s)
 #define TURN_SPEED 250.0f
@@ -42,14 +45,11 @@
 // 23hs5628 Full send speed (mm/s)
 #define SEND_SPEED 1500.0f
 
-// 23hs5628 Ball collection approach speed
-#define APPROACH_SPEED 400.0f
-
 // 23hs5628 Default Acceleration (mm/s/s)
 #define MOTOR_ACCEL 600.0f //1000
 
-// 23hs5628 Hill Start Acceleration (mm/s/s)
-#define HILL_START_ACCEL 300.0f
+// 23hs5628 Full send accel (mm/s/s)
+#define SEND_ACCEL 12000.0f
 
 // Microstep multiplier. E.g. 1, 2, 4, 8, etc.
 #define MS_STEPS 4 //8
@@ -71,8 +71,8 @@ Pre-determined Servo Positions (degrees, 0-180)
 */
 
 // Ramp neutral angle (aka flat)
-#define RAMP_ANGLE_NEUTRAL 0 //90
-#define RAMP_ANGLE_DUMP 90 //0
+#define FROG_ANGLE_NEUTRAL 0 //90
+#define FROG_ANGLE_LIFT 90 //0
 
 // Arms open
 #define ARMS_OPEN 50 //40
@@ -83,4 +83,7 @@ Pre-determined Servo Positions (degrees, 0-180)
 // Special distances
 
 // Arms open to collect balls
-#define TRIGGER_ARMS_CLOSE_CAPTURE 420 //450
+#define TRIGGER_ARMS_CLOSE_CAPTURE 530 //420
+
+// Distance from arena west edge to axle at start. Set by positioning jig
+#define INITIAL_POSITION_LAT 118.2

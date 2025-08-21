@@ -33,10 +33,10 @@ Pivot on one wheel.
 
 One wheel braked, the other driven.
 
-@param targetAngle The angle to rotate to
-@param aroundRight Stationary wheel. Use RIGHT_WHEEL and LEFT_WHEEL I.e. right wheel is braked, left wheel is driven.
+@param targetAngle The angle to rotate to. Positive for CW, negative for CCW.
+@param pivotWheel Stationary wheel. Use RIGHT_WHEEL and LEFT_WHEEL I.e. right wheel is braked, left wheel is driven.
 */
-void turnPivot(float targetAngle, int aroundRight);
+void turnPivot(float targetAngle, int pivotWheel);
 
 /*
 Move arms to angle.
@@ -54,11 +54,11 @@ Move arms to angle with actuation duration used to determine speed.
 void moveArms(float armsAngle, float actTime);
 
 /*
-Set ramp angle.
+Set lift angle for legs.
 
-@param rampAngle Set ramp angle. 0-180 degrees. 
+@param liftAngle Set ramp angle. 0-180 degrees. 
 */
-void tiltRamp(float rampAngle);
+void liftBot(float liftAngle);
 
 /*
 Wait for button to be pressed. Also handles ignoring button held.
@@ -70,7 +70,14 @@ void awaitButton();
 /*
 Reset current stepper position to 0. Does not move steppers.
 */
-void resetPosition();
+void setPosition();
+
+/*
+Set current position to a value. Does not move steppers.
+
+@param newPos New position in mm
+*/
+void setPosition(float newPos);
 
 /*
 Set speed of drive movements in mm/s
@@ -140,8 +147,8 @@ void setup() {
 	armL.setSpeed(ARM_SPEED);
 	armR.setSpeed(ARM_SPEED);
 
-	rampL.attach(SERVO_RAMP_L, RAMP_ANGLE_NEUTRAL);
-	rampR.attach(SERVO_RAMP_R, RAMP_ANGLE_NEUTRAL);
+	rampL.attach(SERVO_RAMP_L, FROG_ANGLE_NEUTRAL);
+	rampR.attach(SERVO_RAMP_R, FROG_ANGLE_NEUTRAL);
 
 	rampL.setSpeed(RAMP_SPEED);
 	rampR.setSpeed(RAMP_SPEED);
@@ -177,6 +184,9 @@ void setup() {
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
 
+	// Set initial east-west position to make abs moves easier re ball pick up.
+	setPosition(INITIAL_POSITION_LAT);
+
 	// Init task counter
 	taskCounter = 0;
 
@@ -186,7 +196,7 @@ void setup() {
 
 	//Get into start position
 	moveArms(ARMS_CLOSED);
-	tiltRamp(RAMP_ANGLE_NEUTRAL);
+	liftBot(FROG_ANGLE_NEUTRAL);
 
 	// Wait for servos to get to their start positions
 	synchronizeAllServosStartAndWaitForAllServosToStop();
@@ -215,12 +225,16 @@ void setup() {
 
 void loop() {
 
-	// Handle opening and closing arms without stopping the steppers for ball capture.
+	// Position triggers. Used for moving arms out of sync with usual tasks.
 	if(!isOneServoMoving()){
 		float curPos=wheelL.getCurrentPositionInMillimeters();
 
-		if(abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 20){
+		if((abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 5) && taskCounter == 0){ // Close arms to capture balls
 			moveArms(ARMS_CLOSED);
+		}
+
+		if((abs(abs(curPos) - 180) < 5) && taskCounter == 8){ // Open arms to dump balls
+			moveArms(ARMS_OPEN);
 		}
 	}
 
@@ -246,62 +260,63 @@ void loop() {
 			float moveTime = 50 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
 
 			//driveAbs(339.292); //360deg
-			driveAbs(630); //650
+			driveAbs(740); //630
 			
 			moveArms(ARMS_OPEN, moveTime); //Arms should be open 20mm before 
 			break;
 		}
 		case 1: //Come back to align w drop box
-			driveAbs(270); //270. 475 to smash pivot
+			driveAbs(600); //Axle centered below ramp.
 			break;
-		case 2: //Turn so rear faces ramp edge.
+		case 2: //Turn so forks faces ramp edge.
+			//Might need a better turn for this coz spikes long.
 			setGroundSpeed(TURN_SPEED);
 			turnNeutral(-90);
 			break;
-		case 3: //Scoot up to ramp
+		case 3: //Slowly shove forks under ramp edge
+			setPosition(250); //Reset position to center dist from arena edge. Allows absolute moves under ramp.
+			setGroundSpeed(CRAWL_SPEED);
+			driveAbs(500); //Engage forks under ramp and begin lifting
+			break;
+		case 4: // Zoom under ramp 
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(-350); //-350
+			driveAbs(1400); // Drive up between ramp supports and overshoot with clearance for neutral turn.
 			break;
-		case 4: // Clamber onto seesaw and slowly climb up. Slide down and smash box.
-			setGroundSpeed(CLIMB_SPEED);
-			driveRel(-(760 + 400)); //Just over center 340
-			break;
-		case 5:
-			tiltRamp(RAMP_ANGLE_DUMP);
-			break;
-/*
-		case 6: // Come off box
-			setGroundSpeed(ESCAPE_SPEED);
-			driveRel(100);
-			break;
-		case 7: // Turn to be parallel w box.
+		case 5: // Pivot right to face arena north-western corner ish.
 			setGroundSpeed(TURN_SPEED);
-			turnPivot(90, LEFT_WHEEL);
+			turnNeutral(20.54); // Angle from SolidWorks plan.
 			break;
-		case 8: // Drive past to clear box
+		case 6: // Pootle towards north-east corner of finish zone. 
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(300);
+			driveRel(859.62); // Distance calc'ed from solidworks plan.
 			break;
-		case 9: // Turn to aim for end zone.
+		case 7: // Face drop box
 			setGroundSpeed(TURN_SPEED);
-			turnPivot(90, LEFT_WHEEL);
+			turnNeutral(-110.54); // Angle from SolidWorks plan.
 			break;
-		case 10: // Park.
+		case 8: // Stand up and advance on drop box.
+			setPosition(); // Reset pos to 0. For arms open to dump timing.
+			liftBot(FROG_ANGLE_LIFT);
+			// Arms open on a position trigger.
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(100);
+			driveRel(241); // Over lip of box.
 			break;
-*/
-		case 6: // Party. Celebratory LED flashes and beeping. 11
+		case 9: // Shoot backwards off the box edge and settle ur bits.
+			moveArms(ARMS_CLOSED);
+			liftBot(FROG_ANGLE_NEUTRAL);
+			setGroundSpeed(SEND_SPEED);
+			setAccelRate(SEND_ACCEL);
+			driveRel(-300);
+			break;
+		default: // Party. Celebratory LED flashes and beeping. End of tasks or something went wrong.
 			while(1){
 				digitalWrite(LED_BUILTIN, LOW);
-				tone(TONE_PIN, TONE_FREQ);
+				tone(TONE_PIN, 2000);
 				delay(250);
 				digitalWrite(LED_BUILTIN, HIGH);
 				noTone(TONE_PIN);
 				delay(250);
 			}
-			break;
-		default:
 			break;
 		}
 
@@ -347,8 +362,8 @@ void turnNeutral(float targetAngle){
 	wheelR.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 }
 
-void turnPivot(float targetAngle, int aroundRight){
-	if(aroundRight){
+void turnPivot(float targetAngle, int pivotWheel){
+	if(pivotWheel){
 		wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*pivotMMperDeg);
 	}
 	else{
@@ -373,9 +388,9 @@ void moveArms(float targetAngle, float actTime){
 	return;
 }
 
-void tiltRamp(float rampAngle){
-	rampL.setEaseTo(rampAngle);
-	rampR.setEaseTo(rampAngle);
+void liftBot(float liftAngle){
+	rampL.setEaseTo(liftAngle);
+	rampR.setEaseTo(liftAngle);
 
 	return;
 }
@@ -414,9 +429,14 @@ void awaitButton(){
 #endif
 }
 
-void resetPosition(){
+void setPosition(){
 	wheelR.setCurrentPositionInMillimeters(0);
 	wheelL.setCurrentPositionInMillimeters(0);
+}
+
+void setPosition(float newPos){
+	wheelR.setCurrentPositionInMillimeters(newPos);
+	wheelL.setCurrentPositionInMillimeters(newPos);
 }
 
 void setGroundSpeed(float groundSpeed){
