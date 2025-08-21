@@ -141,20 +141,20 @@ void setup() {
 #endif
 
 	// Init Servos
-	armL.attach(SERVO_L_ARM, ARMS_CLOSED);
+	armL.attach(SERVO_L_ARM, 180 - ARMS_CLOSED); // Coz reverse opertion doesn't kick in on start up.
 	armR.attach(SERVO_R_ARM, ARMS_CLOSED);
-
+	
 	armL.setSpeed(ARM_SPEED);
 	armR.setSpeed(ARM_SPEED);
-
+	
 	rampL.attach(SERVO_RAMP_L, FROG_ANGLE_NEUTRAL);
 	rampR.attach(SERVO_RAMP_R, FROG_ANGLE_NEUTRAL);
-
+	
 	rampL.setSpeed(RAMP_SPEED);
 	rampR.setSpeed(RAMP_SPEED);
-
-	armL.setReverseOperation(true); //!!! CHECK THESE BEFORE RUNNING !!!
-	rampL.setReverseOperation(true);
+	
+	armL.setReverseOperation(true); //!!! CHECK THIS BEFORE RUNNING !!!
+	rampL.setReverseOperation(true); //!!! CHECK THIS BEFORE RUNNING !!!
 
 	setEasingTypeForAllServos(EASE_QUADRATIC_IN_OUT); //Is this best curve?
 
@@ -184,9 +184,6 @@ void setup() {
 	neutralMMperDeg = (2 * PI * (TRACK_WIDTH / 2)) / 360;
 	pivotMMperDeg = neutralMMperDeg * 2;
 
-	// Set initial east-west position to make abs moves easier re ball pick up.
-	setPosition(INITIAL_POSITION_LAT);
-
 	// Init task counter
 	taskCounter = 0;
 
@@ -195,8 +192,8 @@ void setup() {
 #endif
 
 	//Get into start position
-	moveArms(ARMS_CLOSED);
-	liftBot(FROG_ANGLE_NEUTRAL);
+	//moveArms(ARMS_CLOSED);
+	//liftBot(FROG_ANGLE_NEUTRAL);
 
 	// Wait for servos to get to their start positions
 	synchronizeAllServosStartAndWaitForAllServosToStop();
@@ -226,14 +223,15 @@ void setup() {
 void loop() {
 
 	// Position triggers. Used for moving arms out of sync with usual tasks.
+	// Use target task + 1
 	if(!isOneServoMoving()){
 		float curPos=wheelL.getCurrentPositionInMillimeters();
 
-		if((abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 5) && taskCounter == 0){ // Close arms to capture balls
+		if((abs(abs(curPos) - TRIGGER_ARMS_CLOSE_CAPTURE) < 5) && taskCounter == 1){ // Close arms to capture balls
 			moveArms(ARMS_CLOSED);
 		}
 
-		if((abs(abs(curPos) - 180) < 5) && taskCounter == 8){ // Open arms to dump balls
+		if((abs(abs(curPos) - 180) < 5) && taskCounter == 9){ // Open arms to dump balls
 			moveArms(ARMS_OPEN);
 		}
 	}
@@ -258,7 +256,11 @@ void loop() {
 		switch (taskCounter){
 		case 0:{ //Open arms and drive to ball collection. Todo: close arms with "time to open" calculated from bot speed. Open just in time.
 			float moveTime = 50 / (MOTOR_SPEED*MS_STEPS); //180mm is max dist that the bot can be towards balls before arms will hit balls //180
-
+			
+			// Set initial east-west position to make abs moves easier re ball pick up.
+			setPosition(INITIAL_POSITION_LAT);
+			
+			setGroundSpeed(MOTOR_SPEED);
 			//driveAbs(339.292); //360deg
 			driveAbs(740); //630
 			
@@ -266,6 +268,7 @@ void loop() {
 			break;
 		}
 		case 1: //Come back to align w drop box
+			setGroundSpeed(MOTOR_SPEED);
 			driveAbs(600); //Axle centered below ramp.
 			break;
 		case 2: //Turn so forks faces ramp edge.
@@ -280,7 +283,7 @@ void loop() {
 			break;
 		case 4: // Zoom under ramp 
 			setGroundSpeed(MOTOR_SPEED);
-			driveAbs(1400); // Drive up between ramp supports and overshoot with clearance for neutral turn.
+			driveAbs(1345); // Drive up between ramp supports and overshoot with clearance for neutral turn.
 			break;
 		case 5: // Pivot right to face arena north-western corner ish.
 			setGroundSpeed(TURN_SPEED);
@@ -299,23 +302,23 @@ void loop() {
 			liftBot(FROG_ANGLE_LIFT);
 			// Arms open on a position trigger.
 			setGroundSpeed(MOTOR_SPEED);
-			driveRel(241); // Over lip of box.
+			driveAbs(241); // Over lip of box.
 			break;
 		case 9: // Shoot backwards off the box edge and settle ur bits.
 			moveArms(ARMS_CLOSED);
 			liftBot(FROG_ANGLE_NEUTRAL);
 			setGroundSpeed(SEND_SPEED);
 			setAccelRate(SEND_ACCEL);
-			driveRel(-300);
+			driveAbs(-10);
 			break;
 		default: // Party. Celebratory LED flashes and beeping. End of tasks or something went wrong.
 			while(1){
 				digitalWrite(LED_BUILTIN, LOW);
-				tone(TONE_PIN, 2000);
-				delay(250);
+				tone(TONE_PIN, 3000);
+				delay(150);
 				digitalWrite(LED_BUILTIN, HIGH);
 				noTone(TONE_PIN);
-				delay(250);
+				delay(150);
 			}
 			break;
 		}
@@ -338,7 +341,7 @@ void driveRel(float distance){
 	Serial.println(distance);
 #endif
 
-	wheelL.setupRelativeMoveInMillimeters(distance*-1);
+	wheelL.setupRelativeMoveInMillimeters(distance);
 	wheelR.setupRelativeMoveInMillimeters(distance);
 }
 
@@ -348,7 +351,7 @@ void driveAbs(float distance){
 	Serial.println(distance);
 #endif
 
-	wheelL.setupMoveInMillimeters(distance*-1);
+	wheelL.setupMoveInMillimeters(distance);
 	wheelR.setupMoveInMillimeters(distance);
 }
 
@@ -358,13 +361,13 @@ void turnNeutral(float targetAngle){
 	Serial.println(targetAngle);
 #endif
 
-	wheelL.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
+	wheelL.setupRelativeMoveInMillimeters((targetAngle * -1)*neutralMMperDeg);
 	wheelR.setupRelativeMoveInMillimeters(targetAngle*neutralMMperDeg);
 }
 
 void turnPivot(float targetAngle, int pivotWheel){
 	if(pivotWheel){
-		wheelL.setupRelativeMoveInMillimeters((targetAngle*-1)*pivotMMperDeg);
+		wheelL.setupRelativeMoveInMillimeters(targetAngle*pivotMMperDeg);
 	}
 	else{
 		wheelR.setupRelativeMoveInMillimeters(targetAngle*pivotMMperDeg);

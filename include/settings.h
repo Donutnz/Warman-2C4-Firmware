@@ -71,8 +71,8 @@ Pre-determined Servo Positions (degrees, 0-180)
 */
 
 // Ramp neutral angle (aka flat)
-#define FROG_ANGLE_NEUTRAL 0 //90
-#define FROG_ANGLE_LIFT 90 //0
+#define FROG_ANGLE_NEUTRAL 20 //0
+#define FROG_ANGLE_LIFT 100 //90
 
 // Arms open
 #define ARMS_OPEN 50 //40
@@ -86,4 +86,4 @@ Pre-determined Servo Positions (degrees, 0-180)
 #define TRIGGER_ARMS_CLOSE_CAPTURE 530 //420
 
 // Distance from arena west edge to axle at start. Set by positioning jig
-#define INITIAL_POSITION_LAT 118.2
+#define INITIAL_POSITION_LAT 109.2
